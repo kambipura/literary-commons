@@ -1,0 +1,61 @@
+/* ── Right Now I Think ────────────────────────────────── */
+
+.right-now {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--paper-2);
+  border-bottom: var(--border-light);
+}
+
+.right-now__label {
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  font-style: italic;
+  color: var(--ink-3);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.right-now__display {
+  background: none;
+  border: none;
+  cursor: text;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--ink);
+  padding: 2px 0;
+  text-align: left;
+  flex: 1;
+  min-width: 0;
+  border-bottom: 1px dashed transparent;
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.right-now__display:hover {
+  border-bottom-color: var(--ink-3);
+}
+
+.right-now__placeholder {
+  color: var(--ink-3);
+  font-style: italic;
+}
+
+.right-now__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--ink);
+  padding: 2px 0;
+  border-bottom: 1px solid var(--accent);
+}
+
+.right-now__input::placeholder {
+  color: var(--ink-3);
+  font-style: italic;
+}

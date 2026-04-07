@@ -1,0 +1,107 @@
+/* ── Layout ───────────────────────────────────────────── */
+
+.layout {
+  min-height: 100vh;
+}
+
+.layout__main {
+  margin-left: var(--sidebar-width);
+  min-height: calc(100vh - var(--header-height));
+  display: flex;
+  flex-direction: column;
+}
+
+.layout__content {
+  flex: 1;
+  padding: var(--space-6);
+  max-width: var(--content-wide-max);
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .layout__main {
+    margin-left: 0;
+  }
+
+  .layout__content {
+    padding: var(--space-4);
+  }
+}
+
+/* ── Auth Layout ─────────────────────────────────────────── */
+.auth-layout {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--paper-2);
+  padding: var(--space-4);
+}
+
+.auth-layout__container {
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-layout__brand {
+  text-align: center;
+  margin-bottom: var(--space-10);
+}
+
+.auth-layout__title {
+  font-family: var(--font-heading);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: var(--space-2);
+}
+
+.auth-layout__subtitle {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--ink-3);
+  font-style: italic;
+}
+
+.login-panel {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-sm);
+  border: var(--border-light);
+}
+
+.auth-input {
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
+  font-family: var(--font-body);
+  transition: border-color var(--duration-fast);
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: var(--slate);
+  background: var(--paper);
+}
+
+.prototype-simulation-box {
+  background: var(--paper-2);
+  border: 1px dashed var(--ink-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  margin-top: var(--space-2);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.btn-ghost:hover {
+  text-decoration: underline;
+}

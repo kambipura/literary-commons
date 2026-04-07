@@ -1,0 +1,99 @@
+/* ── Badge ────────────────────────────────────────────── */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+/* Sizes */
+.badge--sm {
+  font-size: var(--text-xs);
+  padding: 2px var(--space-2);
+}
+
+.badge--md {
+  font-size: var(--text-sm);
+  padding: var(--space-1) var(--space-3);
+}
+
+/* Move types */
+.badge--they-say {
+  background-color: var(--move-they-say-bg);
+  color: var(--move-they-say);
+  border: 1px solid rgba(107, 127, 181, 0.2);
+}
+
+.badge--i-say {
+  background-color: var(--move-i-say-bg);
+  color: var(--move-i-say);
+  border: 1px solid rgba(200, 75, 47, 0.2);
+}
+
+.badge--so-what {
+  background-color: var(--move-so-what-bg);
+  color: var(--move-so-what);
+  border: 1px solid rgba(122, 110, 93, 0.2);
+}
+
+/* Reaction types */
+.badge--shifts {
+  background-color: rgba(107, 127, 181, 0.08);
+  color: var(--react-shifts);
+}
+
+.badge--pushback {
+  background-color: rgba(200, 75, 47, 0.08);
+  color: var(--react-pushback);
+}
+
+.badge--new-thought {
+  background-color: rgba(122, 110, 93, 0.08);
+  color: var(--react-new);
+}
+
+/* Comment types */
+.badge--extending {
+  background-color: rgba(74, 124, 89, 0.08);
+  color: var(--comment-extending);
+}
+
+.badge--complicating {
+  background-color: rgba(184, 150, 62, 0.08);
+  color: var(--comment-complicating);
+}
+
+.badge--questioning {
+  background-color: rgba(200, 75, 47, 0.08);
+  color: var(--comment-questioning);
+}
+
+.badge--affirming {
+  background-color: rgba(107, 127, 181, 0.08);
+  color: var(--comment-affirming);
+}
+
+/* Note types */
+.badge--free {
+  background-color: var(--paper-2);
+  color: var(--ink-3);
+}
+
+.badge--positioned {
+  background-color: var(--move-i-say-bg);
+  color: var(--move-i-say);
+}
+
+.badge--reading {
+  background-color: var(--move-they-say-bg);
+  color: var(--move-they-say);
+}
+
+.badge--link {
+  background-color: rgba(74, 124, 89, 0.08);
+  color: var(--comment-extending);
+}

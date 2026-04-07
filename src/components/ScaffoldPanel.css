@@ -1,0 +1,142 @@
+/* ── Scaffold Panel ───────────────────────────────────── */
+
+.scaffold {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.scaffold__toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  background: var(--paper-2);
+  border: var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  transition: all var(--duration-normal) var(--ease-out);
+  writing-mode: vertical-rl;
+  white-space: nowrap;
+}
+
+.scaffold--open .scaffold__toggle {
+  writing-mode: horizontal-tb;
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  z-index: 1;
+}
+
+.scaffold__toggle:hover {
+  color: var(--ink-2);
+  background: var(--paper-3);
+}
+
+.scaffold__toggle-icon {
+  font-size: var(--text-base);
+  line-height: 1;
+}
+
+.scaffold__toggle-label {
+  margin-top: var(--space-1);
+}
+
+.scaffold--open .scaffold__toggle-label {
+  display: none;
+}
+
+/* Panel */
+.scaffold__panel {
+  width: 280px;
+  background: var(--paper);
+  border: var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  animation: scaffold-enter var(--duration-slow) var(--ease-out) both;
+}
+
+/* Tabs */
+.scaffold__tabs {
+  display: flex;
+  border-bottom: var(--border-light);
+}
+
+.scaffold__tab {
+  flex: 1;
+  padding: var(--space-3) var(--space-2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--ink-3);
+  transition: all var(--duration-fast) var(--ease-out);
+  border-bottom: 2px solid transparent;
+}
+
+.scaffold__tab:hover {
+  color: var(--ink-2);
+  background: var(--paper-2);
+}
+
+.scaffold__tab--active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Starters */
+.scaffold__starters {
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.scaffold__starter {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.scaffold__starter:hover {
+  background-color: var(--paper-2);
+}
+
+.scaffold__starter-text {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  font-style: italic;
+  line-height: var(--leading-normal);
+}
+
+.scaffold__starter-insert {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--ink-3);
+  opacity: 0;
+  transition: opacity var(--duration-fast);
+  flex-shrink: 0;
+}
+
+.scaffold__starter:hover .scaffold__starter-insert {
+  opacity: 1;
+}

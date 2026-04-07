@@ -1,0 +1,73 @@
+/* ── Autosave Indicator ───────────────────────────────── */
+
+.autosave {
+  display: inline-flex;
+  align-items: center;
+}
+
+.autosave__saving,
+.autosave__saved,
+.autosave__error {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.autosave__text {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.autosave__saving .autosave__text {
+  color: var(--ink-3);
+}
+
+.autosave__saved .autosave__text {
+  color: var(--success);
+  animation: fade-in var(--duration-fast) var(--ease-out);
+}
+
+.autosave__error .autosave__text {
+  color: var(--error);
+}
+
+/* Ink drop */
+.autosave__drop {
+  position: relative;
+  width: 12px;
+  height: 12px;
+}
+
+.autosave__drop::before,
+.autosave__drop::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background-color: var(--ink-3);
+}
+
+.autosave__drop::before {
+  width: 4px;
+  height: 4px;
+  animation: ink-drop 1.4s var(--ease-out) infinite;
+}
+
+.autosave__drop::after {
+  width: 4px;
+  height: 4px;
+  animation: ink-drop-ring 1.4s var(--ease-out) infinite 0.2s;
+  background-color: transparent;
+  border: 1px solid var(--ink-3);
+}
+
+/* Check mark */
+.autosave__check {
+  font-size: var(--text-sm);
+  color: var(--success);
+  line-height: 1;
+}

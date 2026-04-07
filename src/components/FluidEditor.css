@@ -1,0 +1,145 @@
+.fluid-editor {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  position: relative;
+  padding: var(--space-4) 0;
+}
+
+.fluid-block {
+  position: relative;
+  display: flex;
+  margin-bottom: var(--space-2);
+  transition: all var(--duration-fast);
+}
+
+.fluid-block__gutter {
+  width: 40px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  cursor: pointer;
+  padding-top: 4px; /* match line-height of textarea roughly */
+}
+
+.fluid-block:hover .fluid-block__gutter,
+.fluid-block:focus-within .fluid-block__gutter {
+  opacity: 1;
+}
+
+.fluid-block__gutter-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--ink-3);
+  font-size: 14px;
+}
+
+.fluid-block__gutter-icon:hover {
+  background: var(--paper-2);
+  color: var(--ink-2);
+}
+
+.fluid-block__content {
+  flex: 1;
+  position: relative;
+}
+
+/* Margin Indicator */
+.fluid-block__indicator {
+  position: absolute;
+  left: -20px;
+  top: 4px;
+  bottom: 4px;
+  width: 4px;
+  border-radius: 4px;
+  transition: background-color var(--duration-fast);
+}
+
+.fluid-block__indicator--they-say { background-color: var(--move-they-say); }
+.fluid-block__indicator--i-say { background-color: var(--move-i-say); }
+.fluid-block__indicator--so-what { background-color: var(--move-so-what); }
+.fluid-block__indicator--evidence { background-color: #64748b; }
+.fluid-block__indicator--naysayer { background-color: #94a3b8; }
+.fluid-block__indicator--context { background-color: #cbd5e1; }
+
+/* The autosizing textarea */
+.fluid-block__textarea {
+  width: 100%;
+  min-height: 1.6em;
+  padding: 0;
+  border: none;
+  background: transparent;
+  resize: none;
+  font-family: var(--font-body);
+  font-size: var(--text-lg);
+  line-height: var(--leading-loose);
+  color: var(--ink);
+  overflow: hidden;
+}
+
+.fluid-block__textarea:focus {
+  outline: none;
+}
+
+.fluid-block__textarea::placeholder {
+  color: var(--ink-3);
+  font-style: italic;
+}
+
+/* Popover Toolbar */
+.fluid-toolbar {
+  position: absolute;
+  left: 0;
+  top: 30px;
+  background: #fff;
+  border: var(--border-light);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-md);
+  z-index: var(--z-dropdown);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-2);
+  gap: var(--space-1);
+  min-width: 160px;
+}
+
+.fluid-toolbar__title {
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  padding: 4px 8px;
+  margin-bottom: 4px;
+}
+
+.fluid-toolbar__btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  text-align: left;
+  cursor: pointer;
+  font-size: var(--text-sm);
+  transition: background-color var(--duration-fast);
+}
+
+.fluid-toolbar__btn:hover {
+  background: var(--paper-2);
+}
+
+.fluid-toolbar__btn--none {
+  color: var(--ink-3);
+}

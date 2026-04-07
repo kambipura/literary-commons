@@ -1,0 +1,58 @@
+/* ── Card ─────────────────────────────────────────────── */
+
+.card {
+  border-radius: var(--radius-lg);
+  background-color: var(--paper);
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+/* Variants */
+.card--default {
+  border: var(--border);
+}
+
+.card--elevated {
+  box-shadow: var(--shadow-md);
+}
+
+.card--bordered {
+  border: var(--border);
+  border-left: 3px solid var(--accent);
+}
+
+/* Padding */
+.card--pad-none { padding: 0; }
+.card--pad-sm   { padding: var(--space-3); }
+.card--pad-md   { padding: var(--space-5); }
+.card--pad-lg   { padding: var(--space-8); }
+
+/* Hover */
+.card--hoverable:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.card--clickable {
+  cursor: pointer;
+}
+
+.card--clickable:hover {
+  border-color: var(--ink-3);
+}
+
+/* Slots */
+.card__header {
+  padding-bottom: var(--space-3);
+  border-bottom: var(--border-light);
+  margin-bottom: var(--space-3);
+}
+
+.card__body {
+  flex: 1;
+}
+
+.card__footer {
+  padding-top: var(--space-3);
+  border-top: var(--border-light);
+  margin-top: var(--space-3);
+}

@@ -1,0 +1,63 @@
+/* ── Toast ────────────────────────────────────────────── */
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  box-shadow: var(--shadow-lg);
+  animation: toast-enter var(--duration-slow) var(--ease-out) both;
+  max-width: 400px;
+  width: max-content;
+}
+
+.toast--exit {
+  animation: toast-exit var(--duration-normal) var(--ease-out) both;
+}
+
+.toast--info {
+  background-color: var(--paper);
+  color: var(--ink);
+  border: var(--border);
+}
+
+.toast--success {
+  background-color: var(--paper);
+  color: var(--success);
+  border: 1px solid rgba(74, 124, 89, 0.2);
+}
+
+.toast--error {
+  background-color: var(--paper);
+  color: var(--error);
+  border: 1px solid rgba(200, 75, 47, 0.2);
+}
+
+.toast__icon {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.toast__message {
+  flex: 1;
+  color: var(--ink);
+}
+
+.toast__close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--text-lg);
+  color: var(--ink-3);
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.toast__close:hover {
+  color: var(--ink);
+}

@@ -1,0 +1,122 @@
+/* ── Sidebar ──────────────────────────────────────────── */
+
+.sidebar {
+  width: var(--sidebar-width);
+  height: calc(100vh - var(--header-height));
+  position: fixed;
+  top: var(--header-height);
+  left: 0;
+  background-color: var(--paper);
+  border-right: var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: var(--z-sidebar);
+  overflow-y: auto;
+}
+
+.sidebar__backdrop {
+  display: none;
+}
+
+/* Course info */
+.sidebar__course {
+  padding: var(--space-5) var(--space-4);
+  border-bottom: var(--border-light);
+}
+
+.sidebar__course-label {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+
+.sidebar__course-code {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+  letter-spacing: var(--tracking-wide);
+}
+
+/* Navigation */
+.sidebar__nav {
+  flex: 1;
+  padding: var(--space-3) var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  transition: all var(--duration-fast) var(--ease-out);
+  text-decoration: none;
+}
+
+.sidebar__link:hover {
+  background-color: var(--paper-2);
+  color: var(--ink);
+}
+
+.sidebar__link--active {
+  background-color: var(--accent-light);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.sidebar__link-icon {
+  font-size: var(--text-base);
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.sidebar__link-label {
+  white-space: nowrap;
+}
+
+/* Footer */
+.sidebar__footer {
+  padding: var(--space-4);
+  border-top: var(--border-light);
+}
+
+.sidebar__semester {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+  letter-spacing: var(--tracking-wide);
+}
+
+/* ── Mobile ──────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform var(--duration-slow) var(--ease-out);
+    box-shadow: none;
+  }
+
+  .sidebar--open {
+    transform: translateX(0);
+    box-shadow: var(--shadow-xl);
+  }
+
+  .sidebar__backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 23, 20, 0.3);
+    z-index: calc(var(--z-sidebar) - 1);
+    animation: fade-in var(--duration-normal) var(--ease-out);
+  }
+}

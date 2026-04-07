@@ -1,0 +1,51 @@
+/* ── Dev Toolbar ──────────────────────────────────────── */
+
+.dev-toolbar {
+  position: fixed;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background-color: var(--ink);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-devtools);
+}
+
+.dev-toolbar__label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--ink-3);
+  letter-spacing: var(--tracking-wider);
+  padding: 0 var(--space-1);
+}
+
+.dev-toolbar__roles {
+  display: flex;
+  gap: 2px;
+}
+
+.dev-toolbar__role {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  text-transform: capitalize;
+  transition: all var(--duration-fast) var(--ease-out);
+  letter-spacing: var(--tracking-wide);
+}
+
+.dev-toolbar__role:hover {
+  color: var(--paper);
+}
+
+.dev-toolbar__role--active {
+  background-color: var(--accent);
+  color: var(--paper);
+}
