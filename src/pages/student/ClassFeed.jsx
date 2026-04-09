@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import Card, { CardBody, CardFooter } from '../../components/Card';
 import Badge from '../../components/Badge';
 import Avatar from '../../components/Avatar';
 import Button from '../../components/Button';
 import EmptyState from '../../components/EmptyState';
+import SessionSpotlight from '../../components/SessionSpotlight';
+import ClassRoster from '../../components/ClassRoster';
 import { api } from '../../lib/api';
+import { AuthContext } from '../../context/AuthContext';
 import {
   getUser, getTheySayLabel,
   formatRelative,
@@ -19,43 +22,81 @@ const REACTION_LABELS = {
 };
 
 export default function ClassFeed() {
+  const { user } = useContext(AuthContext);
   const [sessionFilter, setSessionFilter] = useState('all');
   const [sessions, setSessions] = useState([]);
+  const [activeSession, setActiveSession] = useState(null);
   const [reflectionsData, setReflectionsData] = useState([]);
+  const [myReflections, setMyReflections] = useState([]);
+  const [roster, setRoster] = useState([]);
   const [chainsData, setChainsData] = useState([]);
   const [allComments, setAllComments] = useState([]);
   const [allReactions, setAllReactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [recentDraft, setRecentDraft] = useState(null);
 
   useEffect(() => {
     async function init() {
-      const [s, c] = await Promise.all([
-        api.getSessions('course-001'),
-        api.getResponseChains()
-      ]);
-      setSessions(s);
-      setChainsData(c);
-      await fetchFeed('all');
+      if (!user?.id) return;
+      setLoading(true);
+
+      try {
+        // 1. Get Course Context
+        let courseId = 'course-001'; // Fallback
+        const enrollments = await api.getMyEnrollments(user.id);
+        if (enrollments.length > 0) {
+          courseId = enrollments[0].id;
+        }
+
+        // 2. Parallel Fetch Core Data
+        const [s, c, myRefs, students] = await Promise.all([
+          api.getSessions(courseId),
+          api.getResponseChains(),
+          api.getReflections({ userId: user.id }),
+          api.getEnrolledStudentsWithStats(courseId)
+        ]);
+
+        setSessions(s);
+        setChainsData(c);
+        setMyReflections(myRefs);
+        setRoster(students);
+
+        // Find active session
+        const current = s.find(sess => sess.isActive);
+        setActiveSession(current);
+
+        // Find most recent draft across all sessions for the nudge
+        const drafts = myRefs.filter(r => r.status === 'draft')
+          .sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+        setRecentDraft(drafts[0]);
+
+        await fetchFeed('all');
+      } catch (err) {
+        console.error('Hub initialization failed:', err);
+      } finally {
+        setLoading(false);
+      }
     }
     init();
-  }, []);
+  }, [user?.id]);
 
   const fetchFeed = async (sessionId) => {
-    setLoading(true);
+    // If filtering by session, we might want to update the spotlight's context?
+    // For now, the spotlight stays as the CURRENT active session.
+    
+    // Fetch published reflections for the feed
     const refs = await api.getReflections({ sessionId, status: 'published' });
     setReflectionsData(refs);
     
-    // Bulk fetch comments and reactions for these reflections to avoid N+1 UI sluggishness
-    // In Phase 8.2 fallback, this still works correctly.
     const refIds = refs.map(r => r.id);
-    const [cmts, rxs] = await Promise.all([
-      Promise.all(refIds.map(id => api.getComments(id))),
-      Promise.all(refIds.map(id => api.getReactions(id)))
-    ]);
-    
-    setAllComments(cmts.flat());
-    setAllReactions(rxs.flat());
-    setLoading(false);
+    if (refIds.length > 0) {
+      const [cmts, rxs] = await Promise.all([
+        Promise.all(refIds.map(id => api.getComments(id))),
+        Promise.all(refIds.map(id => api.getReactions(id)))
+      ]);
+      setAllComments(cmts.flat());
+      setAllReactions(rxs.flat());
+    }
   };
 
   const handleFilterChange = (sid) => {
@@ -63,30 +104,34 @@ export default function ClassFeed() {
     fetchFeed(sid);
   };
 
+  // Safe delete handler for the draft nudge
+  const handleDeleteDraft = async (e, id) => {
+    e.preventDefault();
+    if (confirm('Delete this draft permanently?')) {
+      await api.deleteReflection(id);
+      setRecentDraft(null);
+      setMyReflections(prev => prev.filter(r => r.id !== id));
+    }
+  };
+
   if (loading && reflectionsData.length === 0) {
     return (
       <div style={{ display: 'flex', height: '100%', justifyContent: 'center', alignItems: 'center', color: 'var(--ink-3)' }}>
-        <p>Loading class feed...</p>
+        <p>Opening Class Hub...</p>
       </div>
     );
   }
 
-  // Published reflections are already filtered and fetched
-  const filtered = reflectionsData;
-
-  // Group into chains and standalone
+  // Filter reflections by chained status
+  const chainedIds = new Set(chainsData.flatMap(c => c.reflection_ids || c.reflectionIds));
   const chains = chainsData
-    .filter(chain => {
-      const chainRefs = chain.reflectionIds.map(id => filtered.find(r => r.id === id)).filter(Boolean);
-      return chainRefs.length > 0;
-    })
     .map(chain => ({
       ...chain,
-      posts: chain.reflectionIds.map(id => filtered.find(r => r.id === id)).filter(Boolean),
-    }));
+      posts: (chain.reflection_ids || chain.reflectionIds).map(id => reflectionsData.find(r => r.id === id)).filter(Boolean),
+    }))
+    .filter(chain => chain.posts.length > 0);
 
-  const chainedIds = new Set(chainsData.flatMap(c => c.reflectionIds));
-  const standalone = filtered.filter(r => !chainedIds.has(r.id));
+  const standalone = reflectionsData.filter(r => !chainedIds.has(r.id));
 
   const renderReactions = (refId) => {
     const refReactions = allReactions.filter(rx => rx.reflectionId === refId);
@@ -95,10 +140,8 @@ export default function ClassFeed() {
     const grouped = {};
     refReactions.forEach(rx => {
       if (!grouped[rx.type]) grouped[rx.type] = [];
-      // If we don't have user name in reaction, we try fallback to mock/api lookup
-      // For now we assume if live data fails, we look in mock.
-      const userName = rx.authorName || getUser(rx.userId)?.name;
-      grouped[rx.type].push(userName?.split(' ')[0] || 'Student');
+      const userName = rx.authorName || 'Student';
+      grouped[rx.type].push(userName.split(' ')[0]);
     });
 
     return (
@@ -113,8 +156,8 @@ export default function ClassFeed() {
     );
   };
 
-  const renderPost = (ref, isFirst = false) => {
-    const authorName = ref.authorName || getUser(ref.userId)?.name;
+  const renderPost = (ref) => {
+    const authorName = ref.authorName || 'Student';
     const sourceLabel = getTheySayLabel(ref.theySaySource);
     const commentCount = allComments.filter(c => c.reflectionId === ref.id).length;
 
@@ -145,64 +188,103 @@ export default function ClassFeed() {
   };
 
   return (
-    <div className="feed">
-      <div className="feed__header">
-        <h2>Class Feed</h2>
-        <Link to="/write">
-          <Button size="sm">Write a reflection</Button>
-        </Link>
-      </div>
-
-      {/* Session filter */}
-      <div className="feed__session-filter">
-        <button
-          className={`notebook__filter-btn ${sessionFilter === 'all' ? 'notebook__filter-btn--active' : ''}`}
-          onClick={() => setSessionFilter('all')}
-        >
-          All sessions
-        </button>
-        {sessions.map(s => (
-          <button
-            key={s.id}
-            className={`notebook__filter-btn ${sessionFilter === s.id ? 'notebook__filter-btn--active' : ''}`}
-            onClick={() => handleFilterChange(s.id)}
-          >
-            {s.number}. {s.title}
-          </button>
-        ))}
-      </div>
-
-      {filtered.length === 0 ? (
-        <EmptyState type="feed" />
-      ) : (
-        <>
-          {/* Response chains */}
-          {chains.map(chain => (
-            <div key={chain.id} className="feed__chain">
-              <div className="feed__chain-label">
-                <span>Response chain</span>
-                <span className="feed__chain-line" />
-                <span>{chain.title}</span>
+    <div className="hub-layout">
+      <div className="hub-main">
+        {/* 1. Global Draft Nudge */}
+        {recentDraft && (
+          <div className="hub-draft-nudge page-enter">
+            <div className="hub-draft-nudge__content">
+              <Badge type="custom" label="Resume Draft" size="sm" />
+              <span className="hub-draft-nudge__text">
+                "<strong>{recentDraft.title || 'Untitled'}</strong>" — last edited {formatRelative(recentDraft.updatedAt)}
+              </span>
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: 'var(--space-2)' }}>
+                <button 
+                  className="meta-btn" 
+                  onClick={(e) => handleDeleteDraft(e, recentDraft.id)}
+                >
+                  Discard
+                </button>
+                <Link to="/write">
+                  <Button size="xs" variant="accent">Continue</Button>
+                </Link>
               </div>
-              <div className="feed__chain-posts">
-                {chain.posts.map((ref, i) => (
-                  <div key={ref.id} className={`feed__post ${i === 0 ? 'feed__post--first' : ''}`}>
-                    <div className="feed__post-dot" />
-                    {renderPost(ref, i === 0)}
+            </div>
+          </div>
+        )}
+
+        {/* 2. Session Spotlight */}
+        <SessionSpotlight 
+          session={activeSession} 
+          myReflections={myReflections.filter(r => r.sessionId === activeSession?.id)}
+        />
+
+        {/* 3. Conversations Feed */}
+        <div className="feed">
+          <div className="feed__header">
+            <h3 className="section-title">The Conversation</h3>
+          </div>
+
+          <div className="feed__session-filter">
+            <button
+              className={`notebook__filter-btn ${sessionFilter === 'all' ? 'notebook__filter-btn--active' : ''}`}
+              onClick={() => handleFilterChange('all')}
+            >
+              All Threads
+            </button>
+            {sessions.map(s => (
+              <button
+                key={s.id}
+                className={`notebook__filter-btn ${sessionFilter === s.id ? 'notebook__filter-btn--active' : ''}`}
+                onClick={() => handleFilterChange(s.id)}
+              >
+                {s.number}. {s.title}
+              </button>
+            ))}
+          </div>
+
+          {reflectionsData.length === 0 ? (
+            <EmptyState type="feed" />
+          ) : (
+            <div className="feed__stream">
+              {/* Chains first */}
+              {chains.map(chain => (
+                <div key={chain.id} className="feed__chain">
+                  <div className="feed__chain-label">
+                    <span>Response chain</span>
+                    <span className="feed__chain-line" />
+                    <span>{chain.title}</span>
                   </div>
-                ))}
-              </div>
-            </div>
-          ))}
+                  <div className="feed__chain-posts">
+                    {chain.posts.map((ref, i) => (
+                      <div key={ref.id} className={`feed__post ${i === 0 ? 'feed__post--first' : ''}`}>
+                        <div className="feed__post-dot" />
+                        {renderPost(ref)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
 
-          {/* Standalone posts */}
-          {standalone.map(ref => (
-            <div key={ref.id} className="feed__standalone">
-              {renderPost(ref)}
+              {/* Standalone posts */}
+              {standalone.map(ref => (
+                <div key={ref.id} className="feed__standalone">
+                  {renderPost(ref)}
+                </div>
+              ))}
             </div>
-          ))}
-        </>
-      )}
+          )}
+        </div>
+      </div>
+
+      {/* 4. Roster Sidebar */}
+      <aside className="hub-sidebar">
+        <ClassRoster 
+          students={roster} 
+          currentUserId={user?.id}
+          loading={loading}
+        />
+      </aside>
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { api } from '../lib/api';
 import './Sidebar.css';
 
 const STUDENT_NAV = [
-  { to: '/',           label: 'Class Hub',   icon: '◉' },
+  { to: '/',           label: 'Dashboard',   icon: '◉' },
   { to: '/notebook',   label: 'Notebook',    icon: '▤' },
   { to: '/feed',       label: 'Class Feed',  icon: '◫' },
   { to: '/write',      label: 'Write',       icon: '✎' },

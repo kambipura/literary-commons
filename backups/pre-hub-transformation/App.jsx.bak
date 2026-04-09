@@ -78,13 +78,14 @@ function AppRoutes() {
         <>
           {/* Shared Writing/Student Routes */}
           <Route element={<StudentLayout />}>
-            <Route index element={role === 'student' ? <ClassFeed /> : DashboardElement} />
+            <Route index element={DashboardElement} />
+            <Route path="dashboard" element={<StudentDashboard />} />
             <Route path="notebook" element={<Notebook />} />
             <Route path="notebook/:id" element={<NoteEditor />} />
             <Route path="feed" element={role === 'professor' ? <ClassFeedProf /> : <ClassFeed />} />
             <Route path="write" element={<WriteReflection />} />
             <Route path="post/:id" element={role === 'professor' ? <PostDetailProf /> : <PostDetail />} />
-            <Route path="thread/:userId?" element={<SemesterThread />} />
+            <Route path="thread" element={<SemesterThread />} />
             <Route path="connections" element={<ConnectionsView />} />
             <Route path="essay" element={<EssayBuilder />} />
             <Route path="links" element={<PeerLinks />} />

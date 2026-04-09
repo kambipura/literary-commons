@@ -1,3 +1,4 @@
+export { default as StudentDashboard } from './Dashboard';
 export { default as Notebook } from './Notebook';
 export { default as NoteEditor } from './NoteEditor';
 export { default as ClassFeed } from './ClassFeed';

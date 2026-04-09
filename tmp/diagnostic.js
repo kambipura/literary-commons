@@ -1,33 +1,61 @@
 import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
 
-const supabase = createClient(
-  "https://mjqkqddsdpnbqlldusfr.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qcWtxZGRzZHBuYnFsbGR1c2ZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0ODMxMjMsImV4cCI6MjA5MTA1OTEyM30.K9fiXAt6TNXJR_L0IEhaiMe_OuPaTdBCJ34gAj0xBqc"
-);
+dotenv.config();
 
-async function checkSchema() {
-  console.log('Checking profiles table columns...');
-  const { data, error } = await supabase
+const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY);
+
+async function diagnose() {
+  const email = 'vinay@sjcc.edu.in'; // Or the email the user is using
+  console.log(`Diagnosing for email: ${email}`);
+
+  // 1. Find User ID
+  const { data: profile } = await supabase
     .from('profiles')
-    .select('*')
-    .limit(1);
-
-  if (error) {
-    console.error('Error fetching profiles:', error.message);
-  } else {
-    console.log('Columns found:', Object.keys(data[0] || {}).join(', '));
+    .select('id, role')
+    .eq('email', email)
+    .single();
+  
+  if (!profile) {
+    console.log('User profile not found');
+    return;
   }
+  const userId = profile.id;
+  console.log(`User ID: ${userId}, Base Role: ${profile.role}`);
 
-  console.log('Listing all allowed_emails...');
-  const { data: allAllowed, error: allALlowedError } = await supabase
-    .from('allowed_emails')
-    .select('email, role');
+  // 2. Check Enrollments
+  const { data: enrollments } = await supabase
+    .from('enrollments')
+    .select('course_id')
+    .eq('student_id', userId);
+  
+  console.log(`Enrollments: ${enrollments?.length || 0}`);
+  enrollments?.forEach(e => console.log(` - Enrolled in Course: ${e.course_id}`));
 
-  if (allALlowedError) {
-    console.error('Error fetching all allowed_emails:', allALlowedError.message);
-  } else {
-    console.log('Whitelisted emails:', allAllowed.map(a => a.email).join(', '));
+  // 3. Check All Active Sessions
+  const { data: activeSessions } = await supabase
+    .from('sessions')
+    .select('id, title, course_id, number')
+    .eq('is_active', true);
+  
+  console.log(`Active Sessions in DB: ${activeSessions?.length || 0}`);
+  activeSessions?.forEach(s => {
+    const isEnrolled = enrollments?.some(e => e.course_id === s.course_id);
+    console.log(` - Session: "${s.title}" (ID: ${s.id}) in Course ${s.course_id} [Enrolled: ${isEnrolled}]`);
+  });
+
+  // 4. Check User's Reflections for these sessions
+  if (activeSessions) {
+    const sessionIds = activeSessions.map(s => s.id);
+    const { data: refs } = await supabase
+      .from('reflections')
+      .select('id, session_id, status, title')
+      .eq('user_id', userId)
+      .in('session_id', sessionIds);
+    
+    console.log(`Reflections for active sessions: ${refs?.length || 0}`);
+    refs?.forEach(r => console.log(` - Reflection: "${r.title}" (ID: ${r.id}) for Session ${r.session_id} [Status: ${r.status}]`));
   }
 }
 
-checkSchema();
+diagnose();
