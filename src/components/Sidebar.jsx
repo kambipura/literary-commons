@@ -19,6 +19,7 @@ const PROFESSOR_NAV = [
   { to: '/notebook',   label: 'Notebook',     icon: '▤' },
   { to: '/sessions',   label: 'Sessions',     icon: '▤' },
   { to: '/feed',       label: 'Class Feed',   icon: '◫' },
+  { to: '/enroll',     label: 'Enroll',       icon: '⊞' },
   { to: '/roster',     label: 'Roster',       icon: '⊞' },
   { to: '/grading',    label: 'Grading',      icon: '✎' },
   { to: '/participation', label: 'Participation', icon: '⟿' },
@@ -28,8 +29,8 @@ const ADMIN_NAV = [
   { to: '/',           label: 'All Courses',  icon: '◉' },
   { to: '/create',     label: 'Create Course',icon: '✎' },
   { to: '/enroll',     label: 'Enroll',       icon: '⊞' },
+  { to: '/staff',      label: 'Users & Staff',icon: '⌘' },
   { to: '/notebook',   label: 'Notebook',     icon: '▤' },
-  { to: '/write',      label: 'Write',        icon: '✎' },
 ];
 
 export default function Sidebar({ isOpen, onClose, className = '' }) {

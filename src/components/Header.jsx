@@ -1,16 +1,12 @@
 import { useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import Avatar from './Avatar';
+import UserDropdown from './UserDropdown';
 import './Header.css';
 
 export default function Header({ onMenuToggle, className = '' }) {
-  const { user } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
   const location = useLocation();
-
-  const roleBadge = user?.role === 'professor' ? 'Prof.'
-    : user?.role === 'admin' ? 'Admin'
-    : null;
 
   return (
     <header className={`header ${className}`}>
@@ -30,12 +26,7 @@ export default function Header({ onMenuToggle, className = '' }) {
 
       <div className="header__right">
         {user && (
-          <div className="header__user">
-            {roleBadge && (
-              <span className="header__role">{roleBadge}</span>
-            )}
-            <Avatar name={user.name} size="sm" />
-          </div>
+          <UserDropdown user={user} logout={logout} />
         )}
       </div>
     </header>

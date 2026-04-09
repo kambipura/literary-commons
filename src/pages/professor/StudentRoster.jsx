@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Avatar from '../../components/Avatar';
 import Badge from '../../components/Badge';
@@ -51,6 +51,7 @@ export default function StudentRoster() {
         <thead>
           <tr>
             <th>Student</th>
+            <th>Reg. No</th>
             <th>Reflections</th>
             <th>Avg Grade</th>
             <th>Last Active</th>
@@ -60,23 +61,36 @@ export default function StudentRoster() {
         <tbody>
           {students.map(student => {
             const isExpanded = expandedId === student.id;
-            // For now, simplify participation metrics for the live view
-            const hasActivity = !!student.enrolledAt;
-
+            const isPending = student.isPending;
+            
             return (
-              <>
+              <React.Fragment key={student.id}>
                 <tr
-                  key={student.id}
                   onClick={() => setExpandedId(isExpanded ? null : student.id)}
+                  style={{ cursor: 'pointer' }}
                 >
                   <td>
                     <div className="roster__name-cell">
-                      <Avatar name={student.name} size="sm" />
+                      {isPending ? (
+                        <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--paper-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.5 }}>
+                          ⏳
+                        </div>
+                      ) : (
+                        <Avatar name={student.name} size="sm" />
+                      )}
                       <div>
-                        <div style={{ fontWeight: 500 }}>{student.name}</div>
+                        <div style={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {student.name}
+                          {isPending && <Badge variant="neutral">Pending Activation</Badge>}
+                        </div>
                         <div style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-3)' }}>{student.email}</div>
                       </div>
                     </div>
+                  </td>
+                  <td>
+                    <span className="mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-2)' }}>
+                      {student.register_number || <em style={{ opacity: 0.5 }}>-</em>}
+                    </span>
                   </td>
                   <td>
                     <span className="mono" style={{ fontSize: 'var(--text-sm)' }}>
@@ -88,90 +102,55 @@ export default function StudentRoster() {
                   </td>
                   <td>
                     <span className="meta">
-                      {student.enrolledAt ? formatDate(student.enrolledAt) : 'No activity'}
+                      {isPending ? 'Added ' + formatDate(student.enrolledAt) : (student.enrolledAt ? formatDate(student.enrolledAt) : 'No activity')}
                     </span>
                   </td>
                   <td>
-                    {student.reflectionsCount === 0 && <span className="roster__flag" title="Needs attention">⚑</span>}
+                    {!isPending && student.reflectionsCount === 0 && <span className="roster__flag" title="Needs attention">⚑</span>}
                   </td>
                 </tr>
 
                 {isExpanded && (
-                  <tr key={`${p.studentId}-detail`} className="roster__detail">
-                    <td colSpan={5}>
+                  <tr className="roster__detail">
+                    <td colSpan={6}>
                       <div className="roster__detail-inner">
-                        {/* Reflections */}
-                        <div>
-                          <div className="roster__detail-section-title">
-                            Reflections ({studentRefs.length})
-                          </div>
-                          <div className="roster__detail-list">
-                            {studentRefs.length === 0 && (
-                              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-3)', fontStyle: 'italic' }}>
-                                No published reflections
-                              </span>
-                            )}
-                            {studentRefs.map(ref => {
-                              const g = studentGrades.find(gr => gr.reflectionId === ref.id);
-                              const session = sessions.find(s => s.id === ref.sessionId);
-                              return (
-                                <div key={ref.id} className="roster__detail-item">
-                                  <div className="roster__detail-item-title">{ref.title}</div>
-                                  <div className="roster__detail-item-meta">
-                                    Session {session?.number || '?'}
-                                    {g && ` · Grade: ${g.grade}`}
-                                    {` · ${formatDate(ref.createdAt)}`}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-
                         {/* Position evolution */}
                         <div>
                           <div className="roster__detail-section-title">Current Position</div>
-                          {user?.rightNowIThink ? (
+                          {isPending ? (
+                            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-3)', fontStyle: 'italic' }}>
+                              Waiting for student to create their account to join the dialogue.
+                            </span>
+                          ) : student.rightNowIThink ? (
                             <div className="roster__position">
-                              "{user.rightNowIThink}"
+                              "{student.rightNowIThink}"
                             </div>
                           ) : (
                             <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-3)', fontStyle: 'italic' }}>
                               No position set
                             </span>
                           )}
-
-                          <div className="roster__detail-section-title" style={{ marginTop: 'var(--space-4)' }}>
-                            Annotations Received ({studentAnns.length})
-                          </div>
-                          <div className="roster__detail-list">
-                            {studentAnns.slice(0, 3).map(ann => (
-                              <div key={ann.id} className="roster__detail-item">
-                                {ann.moveType && <Badge type="move" variant={ann.moveType} size="sm" />}
-                                <div className="roster__detail-item-meta" style={{ marginTop: 'var(--space-1)' }}>
-                                  {ann.comment?.slice(0, 80)}…
-                                </div>
-                              </div>
-                            ))}
-                          </div>
                         </div>
 
-                        {/* Stats */}
+                        {/* Recent Activity Summary */}
                         <div>
-                          <div className="roster__detail-section-title">Activity</div>
+                          <div className="roster__detail-section-title">Activity Summary</div>
                           <div className="roster__detail-list">
-                            <div className="roster__detail-item">
-                              <div className="roster__detail-item-meta">
-                                Comments: {student.commentsCount} · Reactions: {student.reactionsCount}
-                              </div>
-                            </div>
+                             <div className="roster__detail-item">
+                                <div className="roster__detail-item-meta">
+                                  Total Reflections: {student.reflectionsCount}
+                                </div>
+                                <div className="roster__detail-item-meta">
+                                  Comments: {student.commentsCount} · Reactions: {student.reactionsCount}
+                                </div>
+                             </div>
                           </div>
                         </div>
                       </div>
                     </td>
                   </tr>
                 )}
-              </>
+              </React.Fragment>
             );
           })}
         </tbody>

@@ -5,13 +5,25 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-async function checkConfig() {
-  console.log('Checking Supabase connection...');
-  const { data, error } = await supabase.from('profiles').select('*').limit(1);
+async function checkTable() {
+  console.log('Checking allowed_emails table structure...');
+  // Try to insert a dummy record to see if it fails on schema
+  const testEmail = `test-${Date.now()}@example.com`;
+  const { data, error } = await supabase
+    .from('allowed_emails')
+    .insert([{ email: testEmail, name: 'Test Name', register_number: '123' }])
+    .select();
+
   if (error) {
-    console.error('Error fetching from profiles:', error.message);
+    console.error('Error Code:', error.code);
+    console.error('Error Message:', error.message);
+    if (error.message.includes('column "name" of relation "allowed_emails" does not exist')) {
+        console.log('--- CONFIRMED: The column "name" is missing in the DB. ---');
+    }
   } else {
-    console.log('Success! Profiles table exists. Data array length:', data.length);
+    console.log('Success! Table has the correct columns.');
+    console.log('Inserted:', data);
   }
 }
-checkConfig();
+
+checkTable();

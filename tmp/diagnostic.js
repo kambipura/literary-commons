@@ -1,32 +1,33 @@
 import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
-dotenv.config();
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co';
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || 'your-key';
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(
+  "https://mjqkqddsdpnbqlldusfr.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qcWtxZGRzZHBuYnFsbGR1c2ZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0ODMxMjMsImV4cCI6MjA5MTA1OTEyM30.K9fiXAt6TNXJR_L0IEhaiMe_OuPaTdBCJ34gAj0xBqc"
+);
 
-async function diagnostic() {
-  console.log('--- Database Diagnostic ---');
-  
-  // 1. Check Profiles
-  const { data: profiles, error: pError } = await supabase.from('profiles').select('*');
-  console.log('Profiles:', profiles ? profiles.length : 0, 'found');
-  if (profiles) profiles.forEach(p => console.log(`- ${p.email}: ${p.role}`));
-  
-  // 2. Check Courses
-  const { data: courses, error: cError } = await supabase.from('courses').select('*');
-  console.log('Courses:', courses ? courses.length : 0, 'found');
-  if (courses) courses.forEach(c => console.log(`- [${c.id}] ${c.name}`));
-  
-  // 3. Check Sessions
-  const { data: sessions, error: sError } = await supabase.from('sessions').select('*');
-  console.log('Sessions:', sessions ? sessions.length : 0, 'found');
-  if (sessions) sessions.forEach(s => console.log(`- Session ${s.number}: ${s.title} (Active: ${s.is_active})`));
-  
-  if (pError || cError || sError) {
-    console.error('Errors found during diagnostics:', pError?.message || cError?.message || sError?.message);
+async function checkSchema() {
+  console.log('Checking profiles table columns...');
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .limit(1);
+
+  if (error) {
+    console.error('Error fetching profiles:', error.message);
+  } else {
+    console.log('Columns found:', Object.keys(data[0] || {}).join(', '));
+  }
+
+  console.log('Listing all allowed_emails...');
+  const { data: allAllowed, error: allALlowedError } = await supabase
+    .from('allowed_emails')
+    .select('email, role');
+
+  if (allALlowedError) {
+    console.error('Error fetching all allowed_emails:', allALlowedError.message);
+  } else {
+    console.log('Whitelisted emails:', allAllowed.map(a => a.email).join(', '));
   }
 }
 
-diagnostic();
+checkSchema();

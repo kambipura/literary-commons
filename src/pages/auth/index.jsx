@@ -3,11 +3,11 @@ import { AuthContext } from '../../context/AuthContext';
 import Button from '../../components/Button';
 
 export function Login() {
-  const { login } = useContext(AuthContext);
+  const { login, signUp, resetPassword } = useContext(AuthContext);
   const [status, setStatus] = useState('idle'); // idle, submitting, sent, error
+  const [mode, setMode] = useState('login'); // login, signup, reset
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [usePassword, setUsePassword] = useState(false);
   const [diagnosticError, setDiagnosticError] = useState(null);
 
   // Catch any URL fragment errors or AuthContext custom events
@@ -20,7 +20,10 @@ export function Login() {
     }
 
     // 2. Listen for internal context errors
-    const handleContextError = (e) => setDiagnosticError(`Database Error: ${e.detail}`);
+    const handleContextError = (e) => {
+      setDiagnosticError(e.detail);
+      setStatus('error');
+    };
     window.addEventListener('authError', handleContextError);
     return () => window.removeEventListener('authError', handleContextError);
   }, []);
@@ -30,39 +33,53 @@ export function Login() {
     if (!email) return;
 
     setStatus('submitting');
+    setDiagnosticError(null);
     
-    // Call the real Supabase Auth login (OTP or Password)
-    const success = await login(email, usePassword ? password : null);
-    
-    if (success) {
-      if (usePassword) {
-        // Password login redirects automatically via AuthContext/App
-        return;
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (mode === 'signup') {
+      const success = await signUp(cleanEmail, password);
+      if (success) {
+        setStatus('sent');
+      } else {
+        setStatus('error');
       }
-      setStatus('sent');
-    } else {
-      setStatus('error');
+      return;
     }
+
+    if (mode === 'reset') {
+      const success = await resetPassword(cleanEmail);
+      if (success) {
+        setStatus('sent');
+      } else {
+        setStatus('error');
+      }
+      return;
+    }
+
+    // Login logic
+    const success = await login(cleanEmail, password);
+    if (!success) setStatus('error');
   };
 
   if (status === 'sent') {
     return (
       <div className="login-panel page-enter" style={{ textAlign: 'center', padding: 'var(--space-8) var(--space-4)' }}>
         <div style={{ fontSize: '3rem', marginBottom: 'var(--space-6)' }}>✉️</div>
-        <h2 style={{ marginBottom: 'var(--space-3)', fontFamily: 'var(--font-heading)' }}>Check your inbox</h2>
+        <h2 style={{ marginBottom: 'var(--space-3)', fontFamily: 'var(--font-heading)' }}>
+          {mode === 'signup' ? 'Verify your account' : 'Check your inbox'}
+        </h2>
         <p className="meta" style={{ marginBottom: 'var(--space-8)', lineHeight: 1.6, fontSize: 'var(--text-md)' }}>
-          We sent a secure magic link to <strong style={{ color: 'var(--gold)' }}>{email}</strong>.<br/>
-          Click the link to sign in instantly.
+          {mode === 'signup' 
+            ? "We sent a verification link to your email. Click it to activate your account and start your workshop."
+            : `We sent a password reset link to ${email}. Please check your inbox and follow the instructions.`
+          }
         </p>
         
-        <div style={{ marginTop: 'var(--space-6)' }}>
-          <button 
-            className="btn-ghost" 
-            onClick={() => { setStatus('idle'); setEmail(''); }}
-            style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', textDecoration: 'underline' }}
-          >
-            Entered the wrong email? Start over.
-          </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', alignItems: 'center' }}>
+          <Button variant="outline" onClick={() => setStatus('idle')}>
+            Back to Login
+          </Button>
         </div>
       </div>
     );
@@ -105,20 +122,58 @@ export function Login() {
         border: '1px solid var(--paper-3)',
         marginBottom: 'var(--space-6)'
       }}>
+        {mode !== 'reset' && (
+          <div style={{ display: 'flex', borderBottom: '1px solid var(--paper-3)', marginBottom: 'var(--space-6)', gap: 'var(--space-4)' }}>
+            <button 
+              className={`tab-btn ${mode === 'login' ? 'active' : ''}`}
+              onClick={() => { setMode('login'); setDiagnosticError(null); }}
+              style={{ 
+                padding: 'var(--space-3) var(--space-2)', 
+                background: 'transparent', 
+                border: 'none', 
+                color: mode === 'login' ? 'var(--gold)' : 'var(--ink-3)',
+                borderBottom: mode === 'login' ? '2px solid var(--gold)' : '2px solid transparent',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              Sign In
+            </button>
+            <button 
+              className={`tab-btn ${mode === 'signup' ? 'active' : ''}`}
+              onClick={() => { setMode('signup'); setDiagnosticError(null); }}
+              style={{ 
+                padding: 'var(--space-3) var(--space-2)', 
+                background: 'transparent', 
+                border: 'none', 
+                color: mode === 'signup' ? 'var(--gold)' : 'var(--ink-3)',
+                borderBottom: mode === 'signup' ? '2px solid var(--gold)' : '2px solid transparent',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              Join (New Student)
+            </button>
+          </div>
+        )}
+
         <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-4)', textAlign: 'center' }}>
-          {usePassword ? 'Staff Sign In' : 'Sign In to your Workshop'}
+          {mode === 'signup' 
+            ? 'Create your Student Account' 
+            : (mode === 'reset' ? 'Reset your Password' : 'Sign in to the Commons')
+          }
         </h2>
 
         {diagnosticError && (
           <div style={{ padding: 'var(--space-4)', background: '#fef2f2', border: '1px solid #f87171', color: '#b91c1c', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-6)' }}>
-            <strong style={{ display: 'block', marginBottom: '8px' }}>Connection Issue:</strong>
-            {diagnosticError}
+            <strong style={{ display: 'block', marginBottom: '8px', textTransform: 'uppercase', fontSize: '10px', letterSpacing: '1px' }}>Error:</strong>
+            <p style={{ margin: 0, fontSize: 'var(--text-sm)', lineHeight: 1.4 }}>{diagnosticError}</p>
           </div>
         )}
 
         {status === 'error' && !diagnosticError && (
           <div style={{ padding: 'var(--space-3)', background: 'var(--error-light)', color: 'var(--error)', borderRadius: 'var(--radius-sm)', marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)', textAlign: 'center' }}>
-            Authorization failed. Check your email and try again.
+            Authorization failed. Check your credentials and try again.
           </div>
         )}
 
@@ -132,7 +187,10 @@ export function Login() {
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
-                if (status === 'error') setStatus('idle');
+                if (status === 'error' || diagnosticError) {
+                  setStatus('idle');
+                  setDiagnosticError(null);
+                }
               }}
               disabled={status === 'submitting'}
               required
@@ -140,15 +198,32 @@ export function Login() {
             />
           </div>
 
-          {usePassword && (
+          {mode !== 'reset' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-              <label className="meta" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--ink-2)' }}>PASSWORD</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label className="meta" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--ink-2)' }}>PASSWORD</label>
+                {mode === 'login' && (
+                  <button 
+                    type="button" 
+                    onClick={() => setMode('reset')}
+                    style={{ background: 'none', border: 'none', color: 'var(--gold)', fontSize: '10px', cursor: 'pointer', padding: 0 }}
+                  >
+                    Forgot Password?
+                  </button>
+                )}
+              </div>
               <input
                 type="password"
                 className="auth-input"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (status === 'error' || diagnosticError) {
+                    setStatus('idle');
+                    setDiagnosticError(null);
+                  }
+                }}
                 disabled={status === 'submitting'}
                 required
                 style={{ padding: 'var(--space-4)', fontSize: '16px' }}
@@ -156,25 +231,32 @@ export function Login() {
             </div>
           )}
 
-          <Button type="submit" disabled={!email || (usePassword && !password) || status === 'submitting'} style={{ width: '100%', justifyContent: 'center', padding: 'var(--space-4)', fontSize: '16px' }}>
-            {status === 'submitting' ? 'Verifying...' : (usePassword ? 'Sign In' : 'Send Magic Link')}
+          <Button type="submit" disabled={!email || (mode !== 'reset' && !password) || status === 'submitting'} style={{ width: '100%', justifyContent: 'center', padding: 'var(--space-4)', fontSize: '16px' }}>
+            {status === 'submitting' 
+              ? 'Processing...' 
+              : (mode === 'signup' ? 'Create Account' : (mode === 'reset' ? 'Send Reset Link' : 'Sign In'))
+            }
           </Button>
 
-          <button 
-            type="button" 
-            className="btn-ghost" 
-            onClick={() => setUsePassword(!usePassword)}
-            style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-3)', alignSelf: 'center', opacity: 0.7 }}
-          >
-            {usePassword ? '← Sign in with Magic Link' : 'Admin: Sign in with Password'}
-          </button>
+          {mode === 'reset' && (
+            <button 
+              type="button" 
+              className="btn-ghost" 
+              onClick={() => setMode('login')}
+              style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-3)', alignSelf: 'center', opacity: 0.7 }}
+            >
+              ← Back to Sign In
+            </button>
+          )}
         </form>
       </div>
 
       <div style={{ textAlign: 'center', padding: '0 var(--space-4)' }}>
         <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', lineHeight: 1.6 }}>
-          New to the commons? Enter your university email above. <br/>
-          A student profile will be created automatically on your first visit.
+          {mode === 'signup' 
+            ? "Already have an account? Sign in above."
+            : (mode === 'reset' ? "We'll email you a link to reset your password." : "Use your university email to access your workspace.")
+          }
         </p>
       </div>
     </div>

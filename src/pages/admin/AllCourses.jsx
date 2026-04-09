@@ -53,12 +53,12 @@ export default function AllCourses() {
             <div className="course-card__meta">
               <div className="meta-item">
                 <span className="label">Professor</span>
-                <span className="value">Assigned Faculty</span>
+                <span className="value">{course.professorName}</span>
               </div>
               <div className="meta-item">
-                <span className="label">Students</span>
+                <span className="label">Enrolled Students</span>
                 <span className="value">
-                  <Link to={`/roster/${course.id}`} className="link-gold">View Roster</Link>
+                  {course.enrollmentCount} · <Link to={`/roster/${course.id}`} className="link-gold">View Roster</Link>
                 </span>
               </div>
             </div>

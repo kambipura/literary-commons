@@ -177,3 +177,34 @@ textarea.form-control {
   padding-top: var(--space-4);
   border-top: var(--border-light);
 }
+
+/* Enrollment Preview Table */
+.enroll-preview {
+  margin-top: var(--space-6);
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  background: #fff;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: var(--border-light);
+}
+
+.enroll-preview th {
+  background: var(--paper-2);
+  padding: var(--space-3);
+  text-align: left;
+  font-weight: 600;
+  color: var(--ink-2);
+  border-bottom: var(--border-light);
+}
+
+.enroll-preview td {
+  padding: var(--space-3);
+  border-bottom: var(--border-light);
+  color: var(--ink-3);
+}
+
+.enroll-preview tr:last-child td {
+  border-bottom: none;
+}

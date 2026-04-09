@@ -5,9 +5,7 @@ import Badge from '../../components/Badge';
 import Button from '../../components/Button';
 import { api } from '../../lib/api';
 import { AuthContext } from '../../context/AuthContext';
-import {
-  getUser, getTheySayLabel, formatDate, formatTime,
-} from '../../data/mock';
+import { formatDate, formatTime, getTheySayLabel } from '../../lib/utils';
 import './StudentPages.css';
 
 const REACTION_TYPES = [
@@ -71,15 +69,14 @@ export default function PostDetail() {
   }
 
   const ref = reflection;
-  const authorName = ref.authorName || getUser(ref.userId)?.name;
-  const sourceLabel = getTheySayLabel(ref.theySaySource);
+  const authorName = ref.authorName || 'Student';
+  const sourceLabel = getTheySayLabel(ref.theySaySource, { sessionTitle: ref.sessionTitle });
 
   // Group reactions by type with names
   const reactionGroups = {};
   refReactions.forEach(rx => {
     if (!reactionGroups[rx.type]) reactionGroups[rx.type] = [];
-    const name = rx.authorName || getUser(rx.userId)?.name;
-    reactionGroups[rx.type].push(name || 'Student');
+    reactionGroups[rx.type].push(rx.authorName || 'Student');
   });
 
   const toggleReaction = async (type) => {
@@ -113,7 +110,8 @@ export default function PostDetail() {
         type: commentType,
         content: commentText
       });
-      setRefComments(prev => [...prev, newCmt]);
+      // api calls might return author name if updated, or we provide it from user.name
+      setRefComments(prev => [...prev, { ...newCmt, authorName: user.name }]);
       setCommentText('');
     } catch (err) {
       alert('Failed to post comment: ' + err.message);
@@ -126,8 +124,6 @@ export default function PostDetail() {
     <div className="post-detail">
       <Link to="/feed" className="post-detail__back">← Back to feed</Link>
 
-      {/* Response chain context (Static for now in Phase 8.2 fallback) */}
-      {/* TODO: Implement api.getReflectionChain context */}
       <div style={{ marginBottom: 'var(--space-6)' }}></div>
 
       {/* They Say source */}
@@ -184,7 +180,7 @@ export default function PostDetail() {
         </div>
 
         {refComments.map(cmt => {
-          const cmtAuthorName = cmt.authorName || getUser(cmt.userId)?.name;
+          const cmtAuthorName = cmt.authorName || 'Student';
           return (
             <div key={cmt.id} className="post-detail__comment">
               <div className="post-detail__comment-header">

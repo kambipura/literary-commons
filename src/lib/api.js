@@ -1,11 +1,8 @@
 import { supabase } from './supabase';
-import * as mock from '../data/mock';
 
 /**
- * Centered API Service with Graceful Fallbacks.
- * Each method tries to fetch from Supabase, but returns Mock data if:
- * 1. Supabase returns an error (like RLS blocking due to our Mock Auth Bypass)
- * 2. No data is found/returned.
+ * Centered API Service.
+ * Each method fetches from the Supabase backend.
  */
 
 // Helper to convert snake_case (DB) to camelCase (UI) for Courses
@@ -92,16 +89,23 @@ export const api = {
     try {
       const { data, error } = await supabase
         .from('courses')
-        .select('*');
+        .select(`
+          *,
+          profiles:professor_id (name),
+          enrollments (count)
+        `);
 
-      if (error || !data || data.length === 0) {
-        console.warn('api.getCourses: Falling back to mock data.', error?.message);
-        return mock.allCourses;
-      }
+      if (error) throw error;
+      if (!data) return [];
 
-      return data.map(mapCourse);
+      return data.map(c => ({
+        ...mapCourse(c),
+        professorName: c.profiles?.name || 'Unassigned',
+        enrollmentCount: c.enrollments?.[0]?.count || 0
+      }));
     } catch (err) {
-      return mock.allCourses;
+      console.error('api.getCourses failed:', err.message);
+      return [];
     }
   },
 
@@ -113,14 +117,11 @@ export const api = {
         .eq('id', id)
         .single();
 
-      if (error || !data) {
-        console.warn(`api.getCourseById(${id}): Falling back to mock data.`, error?.message);
-        return mock.allCourses.find(c => c.id === id) || mock.course;
-      }
-
-      return mapCourse(data);
+      if (error) throw error;
+      return data ? mapCourse(data) : null;
     } catch (err) {
-      return mock.allCourses.find(c => c.id === id) || mock.course;
+      console.error(`api.getCourseById(${id}) failed:`, err.message);
+      return null;
     }
   },
 
@@ -135,14 +136,13 @@ export const api = {
         .eq('course_id', courseId)
         .order('number', { ascending: true });
 
-      if (error || !data || data.length === 0) {
-        // console.warn(`api.getSessions(${courseId}): Falling back to mock data.`, error?.message);
-        return mock.sessions.filter(s => s.courseId === courseId);
-      }
+      if (error) throw error;
+      if (!data || data.length === 0) return [];
 
       return data.map(mapSession);
     } catch (err) {
-      return mock.sessions.filter(s => s.courseId === courseId);
+      console.error(`api.getSessions(${courseId}) failed:`, err.message);
+      return [];
     }
   },
 
@@ -153,17 +153,15 @@ export const api = {
         .select('*')
         .eq('course_id', courseId)
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
-      if (error || !data) {
-        const mockCourseSessions = mock.sessions.filter(s => s.courseId === courseId);
-        return mockCourseSessions.find(s => s.isActive) || mockCourseSessions[mockCourseSessions.length - 1];
-      }
+      if (error) throw error;
+      if (!data) return null;
 
       return mapSession(data);
     } catch (err) {
-       const mockCourseSessions = mock.sessions.filter(s => s.courseId === courseId);
-       return mockCourseSessions.find(s => s.isActive) || mockCourseSessions[mockCourseSessions.length - 1];
+       console.error('api.getCurrentSession failed:', err.message);
+       return null;
     }
   },
 
@@ -186,24 +184,13 @@ export const api = {
 
       const { data, error } = await query.order('created_at', { ascending: false });
 
-      if (error || !data || data.length === 0) {
-        console.warn('api.getReflections: Falling back to mock data.', error?.message);
-        let fallback = mock.reflections;
-        if (filters.sessionId && filters.sessionId !== 'all') {
-          fallback = fallback.filter(r => r.sessionId === filters.sessionId);
-        }
-        if (filters.status) {
-          fallback = fallback.filter(r => r.status === filters.status);
-        }
-        if (filters.userId) {
-          fallback = fallback.filter(r => r.userId === filters.userId);
-        }
-        return fallback;
-      }
+      if (error) throw error;
+      if (!data) return [];
 
       return data.map(mapReflection);
     } catch (err) {
-      return mock.reflections;
+      console.error('api.getReflections failed:', err.message);
+      return [];
     }
   },
 
@@ -211,16 +198,17 @@ export const api = {
     try {
       const { data, error } = await supabase
         .from('comments')
-        .select('*')
+        .select('*, profiles(name)')
         .eq('reflection_id', reflectionId);
 
-      if (error || !data) {
-        return mock.comments.filter(c => c.reflectionId === reflectionId);
-      }
-
-      return data.map(mapComment);
+      if (error) throw error;
+      return data ? data.map(c => ({
+        ...mapComment(c),
+        authorName: c.profiles?.name || 'Student'
+      })) : [];
     } catch (err) {
-      return mock.comments.filter(c => c.reflectionId === reflectionId);
+      console.error(`api.getComments(${reflectionId}) failed:`, err.message);
+      return [];
     }
   },
 
@@ -228,16 +216,17 @@ export const api = {
     try {
       const { data, error } = await supabase
         .from('reactions')
-        .select('*')
+        .select('*, profiles(name)')
         .eq('reflection_id', reflectionId);
 
-      if (error || !data) {
-        return mock.reactions.filter(r => r.reflectionId === reflectionId);
-      }
-
-      return data.map(mapReaction);
+      if (error) throw error;
+      return data ? data.map(rx => ({
+        ...mapReaction(rx),
+        authorName: rx.profiles?.name || 'Student'
+      })) : [];
     } catch (err) {
-      return mock.reactions.filter(r => r.reflectionId === reflectionId);
+      console.error(`api.getReactions(${reflectionId}) failed:`, err.message);
+      return [];
     }
   },
 
@@ -250,15 +239,11 @@ export const api = {
       
       const { data, error } = await query;
 
-      if (error || !data) {
-        let fallback = mock.responseChains;
-        if (sessionId) fallback = fallback.filter(c => c.sessionId === sessionId);
-        return fallback;
-      }
-
-      return data.map(mapChain);
+      if (error) throw error;
+      return data ? data.map(mapChain) : [];
     } catch (err) {
-      return mock.responseChains;
+      console.error('api.getResponseChains failed:', err.message);
+      return [];
     }
   },
 
@@ -266,17 +251,22 @@ export const api = {
     try {
       const { data, error } = await supabase
         .from('reflections')
-        .select('*, profiles(name)')
+        .select('*, profiles(name), sessions(title)')
         .eq('id', id)
         .single();
 
-      if (error || !data) {
-        return mock.reflections.find(r => r.id === id);
-      }
+      if (error) throw error;
+      if (!data) return null;
 
-      return mapReflection(data);
+      const mapped = mapReflection(data);
+      return {
+        ...mapped,
+        authorName: data.profiles?.name || 'Student',
+        sessionTitle: data.sessions?.title || 'Class Session'
+      };
     } catch (err) {
-      return mock.reflections.find(r => r.id === id);
+      console.error(`api.getReflectionById(${id}) failed:`, err.message);
+      return null;
     }
   },
 
@@ -291,14 +281,11 @@ export const api = {
         .eq('user_id', userId)
         .order('updated_at', { ascending: false });
 
-      if (error || !data) {
-        console.warn(`api.getNotes(${userId}): Falling back to mock data.`, error?.message);
-        return mock.getUserNotes(userId);
-      }
-
-      return data.map(mapNote);
+      if (error) throw error;
+      return data ? data.map(mapNote) : [];
     } catch (err) {
-      return mock.getUserNotes(userId);
+      console.error(`api.getNotes(${userId}) failed:`, err.message);
+      return [];
     }
   },
 
@@ -310,13 +297,11 @@ export const api = {
         .eq('id', id)
         .single();
 
-      if (error || !data) {
-        return mock.notes.find(n => n.id === id);
-      }
-
-      return mapNote(data);
+      if (error) throw error;
+      return data ? mapNote(data) : null;
     } catch (err) {
-      return mock.notes.find(n => n.id === id);
+      console.error(`api.getNoteById(${id}) failed:`, err.message);
+      return null;
     }
   },
 
@@ -420,6 +405,98 @@ export const api = {
       return mapCourse(course);
     } catch (err) {
       console.warn('api.createCourse: Failed.', err.message);
+      throw err;
+    }
+  },
+
+  async getProfiles() {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('role', { ascending: true })
+        .order('name', { ascending: true });
+      
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error('api.getProfiles failed:', err.message);
+      return [];
+    }
+  },
+
+  async updateProfile(id, updates) {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error('api.updateProfile failed:', err.message);
+      throw err;
+    }
+  },
+
+  async deleteProfile(id) {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.error('api.deleteProfile failed:', err.message);
+      throw err;
+    }
+  },
+
+  async getWhitelist() {
+    try {
+      const { data, error } = await supabase
+        .from('allowed_emails')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error('api.getWhitelist failed:', err.message);
+      return [];
+    }
+  },
+
+  async addToWhitelist(entries) {
+    try {
+      const { error } = await supabase
+        .from('allowed_emails')
+        .upsert(entries, { onConflict: ['email'] });
+      
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.error('api.addToWhitelist failed:', err.message);
+      throw err;
+    }
+  },
+
+  async removeFromWhitelist(email) {
+    try {
+      const { error } = await supabase
+        .from('allowed_emails')
+        .delete()
+        .eq('email', email);
+      
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.error('api.removeFromWhitelist failed:', err.message);
       throw err;
     }
   },
@@ -548,12 +625,13 @@ export const api = {
 
   async getEnrolledStudentsWithStats(courseId) {
     try {
-      // Complex join/aggregation
+      if (!courseId) return [];
+
       const { data, error } = await supabase
         .from('profiles')
         .select(`
           *,
-          enrollments!inner(course_id),
+          enrollments!inner(course_id, enrolled_at),
           reflections(count),
           comments(count),
           reactions(count)
@@ -561,14 +639,54 @@ export const api = {
         .eq('enrollments.course_id', courseId);
       
       if (error) throw error;
-      return data.map(profile => ({
+      
+      const activeStudents = data.map(profile => ({
         ...profile,
+        enrolledAt: profile.enrollments[0]?.enrolled_at,
         reflectionsCount: profile.reflections[0]?.count || 0,
         commentsCount: profile.comments[0]?.count || 0,
         reactionsCount: profile.reactions[0]?.count || 0
       }));
+
+      // Fetch pending enrollments
+      const { data: pendingData, error: pendingError } = await supabase
+        .from('pending_enrollments')
+        .select('email, created_at')
+        .eq('course_id', courseId);
+
+      if (pendingError) {
+        console.warn('Could not fetch pending enrollments:', pendingError.message);
+      }
+
+      const pendingEmails = (pendingData || []).map(p => p.email);
+      let whitelistMeta = [];
+      if (pendingEmails.length > 0) {
+        const { data: wlData } = await supabase
+          .from('allowed_emails')
+          .select('email, name, register_number')
+          .in('email', pendingEmails);
+        whitelistMeta = wlData || [];
+      }
+
+      const pendingStudents = (pendingData || []).map(p => {
+        const meta = whitelistMeta.find(w => w.email.toLowerCase() === p.email.toLowerCase()) || {};
+        return {
+          id: `pending-${p.email}`,
+          email: p.email,
+          name: meta.name || 'Pending Invite',
+          role: 'student',
+          register_number: meta.register_number || null,
+          enrolledAt: p.created_at,
+          reflectionsCount: 0,
+          commentsCount: 0,
+          reactionsCount: 0,
+          isPending: true
+        };
+      });
+
+      return [...activeStudents, ...pendingStudents];
     } catch (err) {
-      console.warn(`api.getEnrolledStudentsWithStats(${courseId}) failed:`, err.message);
+      console.error(`api.getEnrolledStudentsWithStats(${courseId}) failed:`, err.message);
       return [];
     }
   },
@@ -669,29 +787,66 @@ export const api = {
     }
   },
 
-  async enrollStudents(courseId, emails) {
+  async enrollStudents(courseId, studentData) {
     try {
-      // In this version, we lookup existing profiles by email first.
-      // If profile doesn't exist, we skip (Real app would send invite).
+      // studentData = [{ email, name, registerNumber }, ...]
+      
+      // 1. Add to allowed_emails (Whitelist) with metadata
+      const whitelistPayload = studentData.map(s => ({ 
+        email: s.email.toLowerCase().trim(),
+        name: s.name?.trim(),
+        register_number: s.registerNumber?.trim()
+      }));
+
+      const { error: wError } = await supabase
+        .from('allowed_emails')
+        .upsert(whitelistPayload, { onConflict: ['email'] });
+
+      if (wError) throw wError;
+
+      // 2. Lookup existing profiles to link immediately
+      const emails = studentData.map(s => s.email.toLowerCase().trim());
       const { data: profiles, error: pError } = await supabase
         .from('profiles')
         .select('id, email')
         .in('email', emails);
 
       if (pError) throw pError;
-      if (!profiles || profiles.length === 0) return false;
+      
+      // 3. Create/Update enrollments (Only if courseId is provided)
+      if (courseId) {
+        // Active profiles get immediate enrollments
+        if (profiles && profiles.length > 0) {
+          const enrollments = profiles.map(p => ({
+            course_id: courseId,
+            student_id: p.id
+          }));
 
-      const enrollments = profiles.map(p => ({
-        course_id: courseId,
-        student_id: p.id,
-        role: 'student'
-      }));
+          const { error } = await supabase
+            .from('enrollments')
+            .upsert(enrollments, { onConflict: ['course_id', 'student_id'] });
 
-      const { error } = await supabase
-        .from('enrollments')
-        .upsert(enrollments, { onConflict: ['course_id', 'student_id'] });
+          if (error) throw error;
+        }
 
-      if (error) throw error;
+        // Users without profiles become pending
+        const existingEmails = new Set((profiles || []).map(p => p.email.toLowerCase()));
+        const pendingStudents = studentData.filter(s => !existingEmails.has(s.email.toLowerCase().trim()));
+
+        if (pendingStudents.length > 0) {
+          const pendingPayload = pendingStudents.map(s => ({
+            email: s.email.toLowerCase().trim(),
+            course_id: courseId
+          }));
+
+          const { error: pendError } = await supabase
+            .from('pending_enrollments')
+            .upsert(pendingPayload, { onConflict: ['email', 'course_id'] });
+
+          if (pendError) throw pendError;
+        }
+      }
+
       return true;
     } catch (err) {
       console.error('api.enrollStudents failed:', err.message);
@@ -809,13 +964,38 @@ export const api = {
         .eq('id', id)
         .single();
       
-      if (error || !data) {
-        return mock.users[id] || { id, name: 'Unknown', role: 'student' };
-      }
-      
+      if (error) throw error;
       return data;
     } catch (err) {
-      return mock.users[id] || { id, name: 'Unknown', role: 'student' };
+      console.error(`api.getProfile(${id}) failed:`, err.message);
+      return null;
+    }
+  },
+
+  async getUserStats(userId) {
+    try {
+      const [courses, reflections, comments, reactions] = await Promise.all([
+        supabase.from('enrollments').select('*', { count: 'exact', head: true }).eq('student_id', userId),
+        supabase.from('reflections').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+        supabase.from('comments').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+        supabase.from('reactions').select('*', { count: 'exact', head: true }).eq('user_id', userId)
+      ]);
+
+      const publicReflections = await supabase
+        .from('reflections')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('status', 'published');
+
+      return {
+        courses: courses.count || 0,
+        submissions: reflections.count || 0,
+        engagements: (comments.count || 0) + (reactions.count || 0),
+        publicPostings: publicReflections.count || 0
+      };
+    } catch (err) {
+      console.warn('api.getUserStats failed:', err.message);
+      return { courses: 0, submissions: 0, engagements: 0, publicPostings: 0 };
     }
   }
 };

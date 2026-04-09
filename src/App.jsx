@@ -38,6 +38,7 @@ import {
   AllCourses,
   CreateCourse,
   EnrollStudents,
+  ManageStaff,
 } from './pages/admin';
 
 // Pages — Auth
@@ -47,7 +48,7 @@ import { Login } from './pages/auth';
 import PublicEssay from './pages/public/PublicEssay';
 
 function AppRoutes() {
-  const { role, isAuthenticated, isLoading } = useContext(AuthContext);
+  const { user, role, isAuthenticated, isLoading } = useContext(AuthContext);
 
   if (isLoading) {
     return (
@@ -95,7 +96,7 @@ function AppRoutes() {
             <Route element={<AdminLayout />}>
               <Route path="admin" element={<AllCourses />} />
               <Route path="create" element={<CreateCourse />} />
-              <Route path="enroll" element={<EnrollStudents />} />
+              <Route path="staff" element={<ManageStaff />} />
             </Route>
           )}
 
@@ -105,11 +106,13 @@ function AppRoutes() {
               <Route path="overview" element={<CourseOverview />} />
               <Route path="sessions" element={<SessionManager />} />
               <Route path="roster/:courseId" element={<StudentRoster />} />
+              <Route path="enroll" element={<EnrollStudents />} />
               <Route path="grading" element={<GradingPanel />} />
               <Route path="participation" element={<ParticipationTracker />} />
             </Route>
           )}
 
+          <Route path="diag" element={<div style={{padding: '50px', background: 'white', color: 'black'}}><pre>{JSON.stringify({role, isAuthenticated, user}, null, 2)}</pre></div>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </>
       )}

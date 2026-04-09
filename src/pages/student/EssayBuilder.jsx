@@ -3,6 +3,7 @@ import Badge from '../../components/Badge';
 import Button from '../../components/Button';
 import AutosaveIndicator from '../../components/AutosaveIndicator';
 import FluidEditor from '../../components/FluidEditor';
+import ReadingView from '../../components/ReadingView';
 import { api } from '../../lib/api';
 import { AuthContext } from '../../context/AuthContext';
 import './StudentPages.css';
@@ -13,8 +14,11 @@ export default function EssayBuilder() {
   const [title, setTitle] = useState('');
   const [blocks, setBlocks] = useState([]);
   const [saveStatus, setSaveStatus] = useState('idle');
+  const [viewMode, setViewMode] = useState('blocks'); // 'blocks' | 'reading'
+  
   const [showPeerModal, setShowPeerModal] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [classmates, setClassmates] = useState([]);
 
   // Library state
   const [myReflections, setMyReflections] = useState([]);
@@ -25,10 +29,11 @@ export default function EssayBuilder() {
     if (!currentUser) return;
 
     async function fetchData() {
-      const [refs, notesData, existingEssay] = await Promise.all([
+      const [refs, notesData, existingEssay, enrollments] = await Promise.all([
         api.getReflections({ userId: currentUser.id }),
         api.getNotes(currentUser.id),
-        api.getEssay(currentUser.id)
+        api.getEssay(currentUser.id),
+        api.getMyEnrollments(currentUser.id)
       ]);
 
       setMyReflections(refs);
@@ -39,6 +44,22 @@ export default function EssayBuilder() {
         setTitle(existingEssay.title || '');
         setBlocks(existingEssay.sections || []);
       }
+
+      // Fetch classmates from all enrolled courses
+      if (enrollments && enrollments.length > 0) {
+        const studentLists = await Promise.all(
+          enrollments.map(e => api.getEnrolledStudents(e.id))
+        );
+        // Flatten and filter out self
+        const allClassmates = studentLists
+          .flat()
+          .filter(s => s && s.id !== currentUser.id);
+        
+        // De-duplicate by ID
+        const uniqueClassmates = Array.from(new Map(allClassmates.map(s => [s.id, s])).values());
+        setClassmates(uniqueClassmates);
+      }
+
       setLoading(false);
     }
     fetchData();
@@ -66,7 +87,7 @@ export default function EssayBuilder() {
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [title, blocks, currentUser, loading]);
+  }, [title, blocks, currentUser, loading, essayId]);
 
   if (loading) {
     return (
@@ -98,7 +119,23 @@ export default function EssayBuilder() {
   return (
     <div className="essay-builder">
       <div className="essay-builder__header">
-        <h2>Essay Canvas</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+          <h2>Essay Canvas</h2>
+          <div className="view-toggle">
+            <button 
+              className={`view-toggle__btn ${viewMode === 'blocks' ? 'active' : ''}`}
+              onClick={() => setViewMode('blocks')}
+            >
+              Blocks
+            </button>
+            <button 
+              className={`view-toggle__btn ${viewMode === 'reading' ? 'active' : ''}`}
+              onClick={() => setViewMode('reading')}
+            >
+              Reading
+            </button>
+          </div>
+        </div>
         <AutosaveIndicator status={saveStatus} />
       </div>
 
@@ -145,7 +182,11 @@ export default function EssayBuilder() {
       <div style={{ display: 'flex', gap: 'var(--space-6)', alignItems: 'flex-start' }}>
         {/* Editor constraints */}
         <div style={{ flex: 1, minHeight: '60vh', borderLeft: 'var(--border-light)', paddingLeft: 'var(--space-4)' }}>
-          <FluidEditor blocks={blocks} onChange={setBlocks} />
+          {viewMode === 'blocks' ? (
+            <FluidEditor blocks={blocks} onChange={setBlocks} />
+          ) : (
+            <ReadingView blocks={blocks} />
+          )}
         </div>
 
         {/* Sources side-panel */}
@@ -185,7 +226,7 @@ export default function EssayBuilder() {
         <span className="meta">{blocks.length} paragraphs · Word count: {blocks.reduce((acc, b) => acc + b.text.split(' ').filter(w => w).length, 0)}</span>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
           <Button size="sm" variant="ghost" onClick={() => setShowPeerModal(true)}>Request Peer Review</Button>
-          <Button size="sm" variant="ghost" onClick={() => window.open(`/public/essay/${essay.id || 'essay-001'}`, '_blank')}>Publish to Web</Button>
+          <Button size="sm" variant="ghost" onClick={() => window.open(`/public/essay/${essayId || 'essay-001'}`, '_blank')}>Publish to Web</Button>
           <Button size="sm" variant="primary">Submit Essay</Button>
         </div>
       </div>
@@ -198,11 +239,13 @@ export default function EssayBuilder() {
             
             <div style={{ marginBottom: 'var(--space-4)' }}>
               <label className="meta" style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Select Classmates:</label>
-              <select multiple style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--paper-3)', minHeight: '80px', fontFamily: 'inherit' }}>
-                <option value="stu-002">Priya Nair</option>
-                <option value="stu-003">Samuel Thomas</option>
-                <option value="stu-004">Aisha Fatima</option>
-                <option value="stu-006">Kavya Menon</option>
+              <select multiple style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--paper-3)', minHeight: '120px', fontFamily: 'inherit' }}>
+                {classmates.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+                {classmates.length === 0 && (
+                  <option disabled>No classmates found</option>
+                )}
               </select>
               <span className="meta" style={{ fontSize: '10px', marginTop: '4px', display: 'block' }}>Hold Ctrl/Cmd to select multiple</span>
             </div>
