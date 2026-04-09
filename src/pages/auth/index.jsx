@@ -42,7 +42,7 @@ export function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email) return;
+    if (mode !== 'update_password' && !email) return;
 
     setStatus('submitting');
     setDiagnosticError(null);
