@@ -92,7 +92,8 @@ export const api = {
         .select(`
           *,
           profiles:professor_id (name),
-          enrollments (count)
+          enrollments:enrollments(count),
+          pending:pending_enrollments(count)
         `);
 
       if (error) throw error;
@@ -101,7 +102,7 @@ export const api = {
       return data.map(c => ({
         ...mapCourse(c),
         professorName: c.profiles?.name || 'Unassigned',
-        enrollmentCount: c.enrollments?.[0]?.count || 0
+        enrollmentCount: (c.enrollments?.[0]?.count || 0) + (c.pending?.[0]?.count || 0)
       }));
     } catch (err) {
       console.error('api.getCourses failed:', err.message);

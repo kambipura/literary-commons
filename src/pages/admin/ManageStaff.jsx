@@ -91,7 +91,7 @@ export default function ManageStaff() {
                 required 
                 value={inviteEmail} 
                 onChange={e => setInviteEmail(e.target.value)} 
-                placeholder="colleague@sjcc.edu.in"
+                placeholder="colleague@example.edu"
               />
             </div>
             <div className="form-group">

@@ -183,11 +183,11 @@ export function Login() {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-            <label className="meta" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--ink-2)' }}>UNIVERSITY EMAIL</label>
+            <label className="meta" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--ink-2)' }}>EMAIL ADDRESS</label>
             <input
               type="email"
               className="auth-input"
-              placeholder="e.g. s.jordan@university.edu"
+              placeholder="e.g. s.jordan@example.edu"
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
@@ -259,7 +259,7 @@ export function Login() {
         <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', lineHeight: 1.6 }}>
           {mode === 'signup' 
             ? "Already have an account? Sign in above."
-            : (mode === 'reset' ? "We'll email you a link to reset your password." : "Use your university email to access your workspace.")
+            : (mode === 'reset' ? "We'll email you a link to reset your password." : "Use your registered email to access your workspace.")
           }
         </p>
       </div>
