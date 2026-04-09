@@ -919,6 +919,21 @@ export const api = {
     }
   },
 
+  async deleteReflection(id) {
+    try {
+      const { error } = await supabase
+        .from('reflections')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.error(`api.deleteReflection(${id}) failed:`, err.message);
+      throw err;
+    }
+  },
+
   async getAnnotations(filters = {}) {
     try {
       let query = supabase.from('annotations').select('*');

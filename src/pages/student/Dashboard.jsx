@@ -132,13 +132,17 @@ export default function StudentDashboard() {
             </div>
             <h2 className="dashboard__session-title">{session.title}</h2>
             <p className="dashboard__session-prompt">{session.theySayPrompt}</p>
-            {!hasWritten ? (
+            {(!hasWritten || recentDraft) ? (
               <div className="dashboard__nudge">
                 <span className="dashboard__nudge-text">
-                  You haven't written for this session yet.
+                  {recentDraft 
+                    ? "You have a draft for this session."
+                    : "You haven't written for this session yet."}
                 </span>
                 <Link to="/write">
-                  <Button size="sm">Respond</Button>
+                  <Button size="sm">
+                    {recentDraft ? 'Resume Response' : 'Respond'}
+                  </Button>
                 </Link>
               </div>
             ) : (
@@ -166,7 +170,21 @@ export default function StudentDashboard() {
               <CardBody>
                 <div className="dashboard__recent-meta">
                   {recentDraft ? (
-                    <Badge type="custom" label="Draft" />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                      <Badge type="custom" label="Draft" />
+                      <button 
+                        onClick={async (e) => {
+                          e.preventDefault();
+                          if (confirm('Delete this draft permanently?')) {
+                            await api.deleteReflection(recentDraft.id);
+                            window.location.reload();
+                          }
+                        }}
+                        style={{ background: 'none', border: 'none', color: 'var(--error)', fontSize: '10px', cursor: 'pointer', opacity: 0.6 }}
+                      >
+                        Delete Draft
+                      </button>
+                    </div>
                   ) : (
                     <Badge type="note" variant={recentItem.type} />
                   )}

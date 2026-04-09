@@ -251,6 +251,21 @@ export default function WriteReflection() {
             </select>
           </div>
           <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            {reflectionId && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                style={{ color: 'var(--error)' }}
+                onClick={async () => {
+                  if (confirm('Permanently delete this draft?')) {
+                    await api.deleteReflection(reflectionId);
+                    navigate('/');
+                  }
+                }}
+              >
+                Discard Draft
+              </Button>
+            )}
             <Button variant="ghost" size="sm" onClick={() => navigate('/feed')}>
               Cancel
             </Button>
