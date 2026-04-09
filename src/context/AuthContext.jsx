@@ -173,12 +173,11 @@ export function AuthProvider({ children }) {
     if (error) {
       console.error('SignUp Error:', error.message);
       window.dispatchEvent(new CustomEvent('authError', { detail: error.message }));
-      return false;
+      return { success: false };
     }
     
-    // If signup is successful, we wait for the trigger to create the profile.
-    // Supabase will automatically sign the user in depending on "Confirm Email" setting.
-    return true;
+    // Return whether an email confirmation is actually needed
+    return { success: true, needsEmailConfirmation: !data.session };
   };
 
   const resetPassword = async (email) => {

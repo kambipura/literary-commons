@@ -38,9 +38,13 @@ export function Login() {
     const cleanEmail = email.trim().toLowerCase();
 
     if (mode === 'signup') {
-      const success = await signUp(cleanEmail, password);
-      if (success) {
-        setStatus('sent');
+      const result = await signUp(cleanEmail, password);
+      if (result?.success) {
+        if (result.needsEmailConfirmation) {
+          setStatus('sent');
+        } else {
+          // Do nothing, let AuthContext's onAuthStateChange handle the redirect seamlessly!
+        }
       } else {
         setStatus('error');
       }
