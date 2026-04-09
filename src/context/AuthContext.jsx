@@ -12,6 +12,7 @@ export const AuthContext = createContext({
   resetPassword: async () => {},
   updatePassword: async () => {},
   logout: async () => {},
+  isRecovering: false,
   updateUser: () => {},
   setRole: () => {},
 });
@@ -20,6 +21,7 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [user, setUser] = useState(null);
   const [roleOverride, setRoleOverride] = useState(null);
+  const [isRecovering, setIsRecovering] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch public.profiles based on auth.user ID
@@ -140,7 +142,10 @@ export function AuthProvider({ children }) {
 
     // 2. Listen for auth changes (login, logout, magic link clicks)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, newSession) => {
+      (event, newSession) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          setIsRecovering(true);
+        }
         setSession(newSession);
         fetchProfile(newSession);
       }
@@ -204,6 +209,8 @@ export function AuthProvider({ children }) {
       window.dispatchEvent(new CustomEvent('authError', { detail: error.message }));
       return false;
     }
+    
+    setIsRecovering(false);
     return true;
   };
 
@@ -237,6 +244,7 @@ export function AuthProvider({ children }) {
       resetPassword,
       updatePassword,
       logout,
+      isRecovering,
       updateUser,
       setRole: setRoleOverride,
     }}>

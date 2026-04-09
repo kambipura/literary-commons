@@ -3,7 +3,7 @@ import { AuthContext } from '../../context/AuthContext';
 import Button from '../../components/Button';
 
 export function Login() {
-  const { login, signUp, resetPassword, updatePassword } = useContext(AuthContext);
+  const { login, signUp, resetPassword, updatePassword, isRecovering } = useContext(AuthContext);
   const [status, setStatus] = useState('idle'); // idle, submitting, sent, error
   const [mode, setMode] = useState('login'); // login, signup, reset, update_password
   const [email, setEmail] = useState('');
@@ -12,6 +12,11 @@ export function Login() {
 
   // Catch any URL fragment errors or AuthContext custom events
   React.useEffect(() => {
+    if (isRecovering) {
+      setMode('update_password');
+      setStatus('idle');
+    }
+    
     // 1. Check URL for Supabase hash errors
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const errorDesc = hashParams.get('error_description');

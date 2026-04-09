@@ -48,7 +48,7 @@ import { Login } from './pages/auth';
 import PublicEssay from './pages/public/PublicEssay';
 
 function AppRoutes() {
-  const { user, role, isAuthenticated, isLoading } = useContext(AuthContext);
+  const { user, role, isAuthenticated, isLoading, isRecovering } = useContext(AuthContext);
 
   if (isLoading) {
     return (
@@ -69,7 +69,7 @@ function AppRoutes() {
       <Route path="/public/essay/:id" element={<PublicEssay />} />
 
       {/* Auth Routes */}
-      {!isAuthenticated ? (
+      {(!isAuthenticated || isRecovering) ? (
         <Route element={<AuthLayout />}>
           <Route path="login" element={<Login />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
