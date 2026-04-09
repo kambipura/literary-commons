@@ -4,9 +4,8 @@ import Avatar from '../../components/Avatar';
 import Badge from '../../components/Badge';
 import { api } from '../../lib/api';
 import {
-  getUser, getReflectionGrade,
   getTheySayLabel, formatRelative,
-} from '../../data/mock';
+} from '../../lib/utils';
 import './ProfessorPages.css';
 
 export default function ClassFeedProf() {
@@ -96,11 +95,11 @@ export default function ClassFeedProf() {
   const uniqueStudents = [...new Set(reflectionsData.map(r => r.userId))];
 
   const renderPost = (ref) => {
-    const authorName = ref.authorName || getUser(ref.userId)?.name;
+    const authorName = ref.authorName || 'Student';
     const sourceLabel = getTheySayLabel(ref.theySaySource);
     const commentCount = allComments.filter(c => c.reflectionId === ref.id).length;
     const reactionCount = allReactions.filter(r => r.reflectionId === ref.id).length;
-    const grade = getReflectionGrade(ref.id);
+    const grade = null; // No grades fetched yet
 
     return (
       <Link to={`/post/${ref.id}`} key={ref.id} className="feed-prof__post-card">
@@ -152,7 +151,7 @@ export default function ClassFeedProf() {
         >
           <option value="all">All Students</option>
           {uniqueStudents.map(sid => (
-            <option key={sid} value={sid}>{getUser(sid)?.name}</option>
+            <option key={sid} value={sid}>Student ({sid.substring(0,6)})</option>
           ))}
         </select>
       </div>

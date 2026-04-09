@@ -75,3 +75,10 @@ export function getTheySayLabel(source, context = {}) {
   
   return '';
 }
+
+export const PROMPT_TYPES = {
+  'they-say': { label: 'They Say/I Say', icon: '🗣️' },
+  'reading': { label: 'Reading Response', icon: '📖' },
+  'open': { label: 'Open Reflection', icon: '💭' },
+  'peer': { label: 'Peer Review', icon: '👥' }
+};

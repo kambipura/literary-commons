@@ -5,10 +5,7 @@ import Badge from '../../components/Badge';
 import Button from '../../components/Button';
 import { api } from '../../lib/api';
 import { AuthContext } from '../../context/AuthContext';
-import {
-  getSessionStats, getCourseParticipation, getFreeNotes,
-  getUser, formatRelative,
-} from '../../data/mock';
+import { formatRelative } from '../../lib/utils';
 import './ProfessorPages.css';
 
 export default function CourseOverview() {
@@ -81,10 +78,7 @@ export default function CourseOverview() {
   const sessions = sessionList;
   const currentSession = activeSession;
 
-  // Stats fallbacks
-  const stats = currentSession ? getSessionStats(currentSession.id) : { responseCount: 0, uniqueStudents: 0, avgWordCount: 0 };
-  const participation = getCourseParticipation(); // Mock for now
-  const studentFreeNotes = getFreeNotes(); // Mock for now
+  const stats = { responseCount: 0, uniqueStudents: 0, avgWordCount: 0 };
 
   // Filter recent activity properly based on fetched state
   const recentRefs = allRecentReflections.slice(0, 4);

@@ -5,7 +5,7 @@ import Badge from '../../components/Badge';
 import { api } from '../../lib/api';
 import {
   formatDate,
-} from '../../data/mock';
+} from '../../lib/utils';
 import './ProfessorPages.css';
 
 export default function StudentRoster() {

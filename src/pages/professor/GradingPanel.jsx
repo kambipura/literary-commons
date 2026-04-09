@@ -7,8 +7,7 @@ import { api } from '../../lib/api';
 import { AuthContext } from '../../context/AuthContext';
 import {
   formatDate,
-  getUser,
-} from '../../data/mock';
+} from '../../lib/utils';
 import './ProfessorPages.css';
 
 const GRADE_OPTIONS = ['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D', 'F'];
@@ -139,7 +138,7 @@ export default function GradingPanel() {
         >
           <option value="all">All Students</option>
           {uniqueStudents.map(sid => (
-            <option key={sid} value={sid}>{getUser(sid)?.name || 'Student'}</option>
+            <option key={sid} value={sid}>Student ({sid.substring(0,6)})</option>
           ))}
         </select>
 

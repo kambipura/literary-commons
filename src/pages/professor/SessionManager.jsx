@@ -5,7 +5,7 @@ import { api } from '../../lib/api';
 import { AuthContext } from '../../context/AuthContext';
 import {
   PROMPT_TYPES,
-} from '../../data/mock';
+} from '../../lib/utils';
 import './ProfessorPages.css';
 
 export default function SessionManager() {
