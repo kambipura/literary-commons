@@ -10,6 +10,7 @@ export const AuthContext = createContext({
   login: async () => {},
   signUp: async () => {},
   resetPassword: async () => {},
+  updatePassword: async () => {},
   logout: async () => {},
   updateUser: () => {},
   setRole: () => {},
@@ -193,6 +194,19 @@ export function AuthProvider({ children }) {
     return true;
   };
 
+  const updatePassword = async (newPassword) => {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (error) {
+      console.error('Update Password Error:', error.message);
+      window.dispatchEvent(new CustomEvent('authError', { detail: error.message }));
+      return false;
+    }
+    return true;
+  };
+
   const logout = async () => {
     setIsLoading(true);
     await supabase.auth.signOut();
@@ -221,6 +235,7 @@ export function AuthProvider({ children }) {
       login,
       signUp,
       resetPassword,
+      updatePassword,
       logout,
       updateUser,
       setRole: setRoleOverride,

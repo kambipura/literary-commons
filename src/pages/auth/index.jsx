@@ -3,9 +3,9 @@ import { AuthContext } from '../../context/AuthContext';
 import Button from '../../components/Button';
 
 export function Login() {
-  const { login, signUp, resetPassword } = useContext(AuthContext);
+  const { login, signUp, resetPassword, updatePassword } = useContext(AuthContext);
   const [status, setStatus] = useState('idle'); // idle, submitting, sent, error
-  const [mode, setMode] = useState('login'); // login, signup, reset
+  const [mode, setMode] = useState('login'); // login, signup, reset, update_password
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [diagnosticError, setDiagnosticError] = useState(null);
@@ -25,6 +25,13 @@ export function Login() {
       setStatus('error');
     };
     window.addEventListener('authError', handleContextError);
+
+    // 3. Detect password recovery link
+    if (hashParams.get('type') === 'recovery') {
+      setMode('update_password');
+      setStatus('idle');
+    }
+    
     return () => window.removeEventListener('authError', handleContextError);
   }, []);
 
@@ -55,6 +62,18 @@ export function Login() {
       const success = await resetPassword(cleanEmail);
       if (success) {
         setStatus('sent');
+      } else {
+        setStatus('error');
+      }
+      return;
+    }
+
+    if (mode === 'update_password') {
+      const success = await updatePassword(password);
+      if (success) {
+        setStatus('idle');
+        setMode('login');
+        alert('Password updated successfully! Please sign in with your new password.');
       } else {
         setStatus('error');
       }
@@ -164,7 +183,7 @@ export function Login() {
         <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-4)', textAlign: 'center' }}>
           {mode === 'signup' 
             ? 'Create your Student Account' 
-            : (mode === 'reset' ? 'Reset your Password' : 'Sign in to the Commons')
+            : (mode === 'reset' ? 'Reset your Password' : (mode === 'update_password' ? 'Set New Password' : 'Sign in to the Commons'))
           }
         </h2>
 
@@ -177,30 +196,32 @@ export function Login() {
 
         {status === 'error' && !diagnosticError && (
           <div style={{ padding: 'var(--space-3)', background: 'var(--error-light)', color: 'var(--error)', borderRadius: 'var(--radius-sm)', marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)', textAlign: 'center' }}>
-            Authorization failed. Check your credentials and try again.
+            {mode === 'update_password' ? 'Failed to update password. Link may be expired.' : 'Authorization failed. Check your credentials and try again.'}
           </div>
         )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-            <label className="meta" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--ink-2)' }}>EMAIL ADDRESS</label>
-            <input
-              type="email"
-              className="auth-input"
-              placeholder="e.g. s.jordan@example.edu"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (status === 'error' || diagnosticError) {
-                  setStatus('idle');
-                  setDiagnosticError(null);
-                }
-              }}
-              disabled={status === 'submitting'}
-              required
-              style={{ padding: 'var(--space-4)', fontSize: '16px' }}
-            />
-          </div>
+          {mode !== 'update_password' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+              <label className="meta" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--ink-2)' }}>EMAIL ADDRESS</label>
+              <input
+                type="email"
+                className="auth-input"
+                placeholder="e.g. s.jordan@example.edu"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (status === 'error' || diagnosticError) {
+                    setStatus('idle');
+                    setDiagnosticError(null);
+                  }
+                }}
+                disabled={status === 'submitting'}
+                required
+                style={{ padding: 'var(--space-4)', fontSize: '16px' }}
+              />
+            </div>
+          )}
 
           {mode !== 'reset' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
@@ -235,10 +256,10 @@ export function Login() {
             </div>
           )}
 
-          <Button type="submit" disabled={!email || (mode !== 'reset' && !password) || status === 'submitting'} style={{ width: '100%', justifyContent: 'center', padding: 'var(--space-4)', fontSize: '16px' }}>
+          <Button type="submit" disabled={(mode !== 'update_password' && !email) || (mode !== 'reset' && !password) || status === 'submitting'} style={{ width: '100%', justifyContent: 'center', padding: 'var(--space-4)', fontSize: '16px' }}>
             {status === 'submitting' 
               ? 'Processing...' 
-              : (mode === 'signup' ? 'Create Account' : (mode === 'reset' ? 'Send Reset Link' : 'Sign In'))
+              : (mode === 'signup' ? 'Create Account' : (mode === 'reset' ? 'Send Reset Link' : (mode === 'update_password' ? 'Update Password' : 'Sign In')))
             }
           </Button>
 
