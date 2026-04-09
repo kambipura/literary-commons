@@ -132,24 +132,34 @@ export default function StudentDashboard() {
             </div>
             <h2 className="dashboard__session-title">{session.title}</h2>
             <p className="dashboard__session-prompt">{session.theySayPrompt}</p>
-            {(!hasWritten || recentDraft) ? (
-              <div className="dashboard__nudge">
-                <span className="dashboard__nudge-text">
-                  {recentDraft 
-                    ? "You have a draft for this session."
-                    : "You haven't written for this session yet."}
-                </span>
-                <Link to="/write">
-                  <Button size="sm">
-                    {recentDraft ? 'Resume Response' : 'Respond'}
-                  </Button>
-                </Link>
-              </div>
-            ) : (
-              <div className="dashboard__written">
-                <span className="meta">✓ you've written {mySessionReflections.length} reflection{mySessionReflections.length > 1 ? 's' : ''}</span>
-              </div>
-            )}
+            {(() => {
+              const hasPublished = mySessionReflections.some(r => r.status === 'published');
+              const hasDraft = mySessionReflections.some(r => r.status === 'draft');
+
+              if (!hasPublished && !hasDraft) {
+                return (
+                  <div className="dashboard__nudge">
+                    <span className="dashboard__nudge-text">You haven't written for this session yet.</span>
+                    <Link to="/write"><Button size="sm">Respond</Button></Link>
+                  </div>
+                );
+              }
+
+              if (hasDraft && !hasPublished) {
+                return (
+                  <div className="dashboard__nudge">
+                    <span className="dashboard__nudge-text">You have a draft for this session.</span>
+                    <Link to="/write"><Button size="sm">Resume Response</Button></Link>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="dashboard__written">
+                  <span className="meta">✓ you've written {mySessionReflections.length} reflection{mySessionReflections.length > 1 ? 's' : ''}</span>
+                </div>
+              );
+            })()}
           </div>
         </section>
       ) : (
