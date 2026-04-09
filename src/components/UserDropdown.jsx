@@ -1,10 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
+import { AuthContext } from '../context/AuthContext';
 import Avatar from './Avatar';
 import './Header.css';
 
 export default function UserDropdown({ user, logout }) {
+  const { role: activeRole, setRole } = useContext(AuthContext);
   const [isOpen, setIsOpen] = useState(false);
   const [stats, setStats] = useState({ courses: 0, submissions: 0, engagements: 0, publicPostings: 0 });
   const dropdownRef = useRef(null);
@@ -79,6 +81,36 @@ export default function UserDropdown({ user, logout }) {
               <span className="user-dropdown__stat-label">Public Posts</span>
             </div>
           </div>
+
+          {(user?.role === 'admin' || user?.role === 'professor') && (
+            <div className="user-dropdown__switcher">
+              <div className="user-dropdown__section-label">Switch View</div>
+              <div className="user-dropdown__switcher-grid">
+                {user.role === 'admin' && (
+                  <button 
+                    className={`user-dropdown__switch-btn ${activeRole === 'admin' ? 'active' : ''}`}
+                    onClick={() => { setRole('admin'); navigate('/'); setIsOpen(false); }}
+                  >
+                    Admin
+                  </button>
+                )}
+                {(user.role === 'admin' || user.role === 'professor') && (
+                  <button 
+                    className={`user-dropdown__switch-btn ${activeRole === 'professor' ? 'active' : ''}`}
+                    onClick={() => { setRole('professor'); navigate('/'); setIsOpen(false); }}
+                  >
+                    Prof
+                  </button>
+                )}
+                <button 
+                  className={`user-dropdown__switch-btn ${activeRole === 'student' ? 'active' : ''}`}
+                  onClick={() => { setRole('student'); navigate('/'); setIsOpen(false); }}
+                >
+                  Student
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="user-dropdown__actions">
             <button className="user-dropdown__action-btn" onClick={() => navigate('/notebook')}>

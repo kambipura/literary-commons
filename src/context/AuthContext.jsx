@@ -216,6 +216,7 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     setIsLoading(true);
+    setRoleOverride(null);
     await supabase.auth.signOut();
   };
 
