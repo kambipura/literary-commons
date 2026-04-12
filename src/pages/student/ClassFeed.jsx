@@ -87,7 +87,7 @@ export default function ClassFeed() {
           .sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
         setRecentDraft(drafts[0]);
 
-        await fetchFeed('all');
+        await fetchFeed();
       } catch (err) {
         console.error('Hub initialization failed:', err);
       } finally {

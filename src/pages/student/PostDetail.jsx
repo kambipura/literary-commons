@@ -63,7 +63,7 @@ export default function PostDetail() {
   if (loading) {
     return (
       <div className="post-detail">
-        <Link to="/feed" className="post-detail__back">← Back to feed</Link>
+        <Link to="/" className="post-detail__back">← The Commons</Link>
         <p style={{ color: 'var(--ink-3)', margin: 'var(--space-8) 0', textAlign: 'center' }}>Loading post...</p>
       </div>
     );
@@ -72,7 +72,7 @@ export default function PostDetail() {
   if (!reflection) {
     return (
       <div className="post-detail">
-        <Link to="/feed" className="post-detail__back">← Back to feed</Link>
+        <Link to="/" className="post-detail__back">← The Commons</Link>
         <p>Post not found.</p>
       </div>
     );
@@ -80,7 +80,6 @@ export default function PostDetail() {
 
   const ref = reflection;
   const authorName = ref.authorName || 'Student';
-  const sourceLabel = getTheySayLabel(ref.theySaySource, { sessionTitle: ref.sessionTitle });
 
   // Group reactions by type with names
   const reactionGroups = {};
@@ -132,14 +131,11 @@ export default function PostDetail() {
 
   return (
     <div className="post-detail">
-      <Link to="/feed" className="post-detail__back">← Back to feed</Link>
+      <Link to="/" className="post-detail__back">← The Commons</Link>
 
       <div style={{ marginBottom: 'var(--space-6)' }}></div>
 
-      {/* They Say source */}
-      {sourceLabel && (
-        <div className="post-detail__source">{sourceLabel}</div>
-      )}
+
 
       {/* Author header */}
       <div className="post-detail__header">
