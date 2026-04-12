@@ -130,6 +130,7 @@ export default function WriteReflection() {
     const content = JSON.stringify(blocks);
 
     try {
+      let finalId = reflectionId;
       if (reflectionId) {
         await api.updateReflection(reflectionId, {
           title,
@@ -138,7 +139,7 @@ export default function WriteReflection() {
           status: privacy === 'draft' ? 'draft' : 'published'
         });
       } else {
-        await api.createReflection({
+        const created = await api.createReflection({
           userId: user.id,
           sessionId: session?.id || null,
           title,
@@ -146,8 +147,16 @@ export default function WriteReflection() {
           privacy,
           status: privacy === 'draft' ? 'draft' : 'published'
         });
+        finalId = created.id;
       }
-      navigate('/feed');
+
+      // Draft: stay on write page (autosave covers it)
+      // Class/Public: go to the post so they can see it and share it
+      if (privacy === 'draft') {
+        navigate('/');
+      } else {
+        navigate(`/post/${finalId}`);
+      }
     } catch (err) {
       alert('Failed to publish: ' + err.message);
     } finally {

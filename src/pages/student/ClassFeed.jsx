@@ -5,17 +5,26 @@ import Badge from '../../components/Badge';
 import Avatar from '../../components/Avatar';
 import Button from '../../components/Button';
 import EmptyState from '../../components/EmptyState';
-import SessionSpotlight from '../../components/SessionSpotlight';
 import ClassRoster from '../../components/ClassRoster';
 import { api } from '../../lib/api';
 import { AuthContext } from '../../context/AuthContext';
-import { getTheySayLabel, formatRelative } from '../../lib/utils';
+import { formatRelative } from '../../lib/utils';
 import './StudentPages.css';
 
 const REACTION_LABELS = {
   shifts: 'This shifts something for me',
   pushback: 'I want to push back',
   new: 'I hadn\'t thought of this',
+};
+
+// Parse block-JSON content into readable plain text
+const parseContent = (content) => {
+  if (!content) return '';
+  try {
+    const blocks = JSON.parse(content);
+    if (Array.isArray(blocks)) return blocks.map(b => b.text).filter(Boolean).join('\n\n');
+  } catch {}
+  return content;
 };
 
 export default function ClassFeed() {
@@ -158,23 +167,20 @@ export default function ClassFeed() {
 
   const renderPost = (ref) => {
     const authorName = ref.authorName || 'Student';
-    const sourceLabel = getTheySayLabel(ref.theySaySource);
     const commentCount = allComments.filter(c => c.reflectionId === ref.id).length;
+    const preview = parseContent(ref.content);
 
     return (
       <Link to={`/post/${ref.id}`} className="feed__post-card" key={ref.id}>
         <Card padding="md" hoverable>
           <CardBody>
-            {sourceLabel && (
-              <div className="feed__post-source">{sourceLabel}</div>
-            )}
             <div className="feed__post-header">
               <Avatar name={authorName} size="sm" />
               <span className="feed__post-author">{authorName}</span>
               <span className="meta">{formatRelative(ref.createdAt)}</span>
             </div>
             <h4 className="feed__post-title">{ref.title}</h4>
-            <p className="feed__post-preview">{ref.content}</p>
+            <p className="feed__post-preview">{preview}</p>
             {renderReactions(ref.id)}
             {commentCount > 0 && (
               <span className="feed__post-comments-count">
@@ -199,8 +205,8 @@ export default function ClassFeed() {
                 "<strong>{recentDraft.title || 'Untitled'}</strong>" — last edited {formatRelative(recentDraft.updatedAt)}
               </span>
               <div style={{ marginLeft: 'auto', display: 'flex', gap: 'var(--space-2)' }}>
-                <button 
-                  className="meta-btn" 
+                <button
+                  className="meta-btn"
                   onClick={(e) => handleDeleteDraft(e, recentDraft.id)}
                 >
                   Discard
@@ -213,13 +219,7 @@ export default function ClassFeed() {
           </div>
         )}
 
-        {/* 2. Session Spotlight */}
-        <SessionSpotlight 
-          session={activeSession} 
-          myReflections={myReflections.filter(r => r.sessionId === activeSession?.id)}
-        />
-
-        {/* 3. Conversations Feed */}
+        {/* 2. Conversations Feed */}
         <div className="feed">
           <div className="feed__header">
             <h3 className="section-title">The Conversation</h3>

@@ -5,8 +5,18 @@ import Badge from '../../components/Badge';
 import Button from '../../components/Button';
 import { api } from '../../lib/api';
 import { AuthContext } from '../../context/AuthContext';
-import { formatDate, formatTime, getTheySayLabel } from '../../lib/utils';
+import { formatDate, formatTime } from '../../lib/utils';
 import './StudentPages.css';
+
+// Parse block-JSON content into readable paragraphs
+const parseContent = (content) => {
+  if (!content) return [];
+  try {
+    const blocks = JSON.parse(content);
+    if (Array.isArray(blocks)) return blocks.map(b => b.text).filter(Boolean);
+  } catch {}
+  return [content];
+};
 
 const REACTION_TYPES = [
   { key: 'shifts', label: 'This shifts something for me' },
@@ -143,7 +153,47 @@ export default function PostDetail() {
       </div>
 
       <h1 className="post-detail__title">{ref.title}</h1>
-      <div className="post-detail__content">{ref.content}</div>
+
+      {/* Public share banner */}
+      {ref.privacy === 'public' && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 'var(--space-3)',
+          padding: 'var(--space-3) var(--space-4)',
+          background: 'var(--accent-light)',
+          borderRadius: 'var(--radius-md)',
+          marginBottom: 'var(--space-6)',
+          fontSize: 'var(--text-sm)'
+        }}>
+          <span style={{ color: 'var(--accent)' }}>🌐 Published publicly</span>
+          <code style={{
+            flex: 1,
+            fontSize: 'var(--text-xs)',
+            color: 'var(--ink-3)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+          }}>
+            {window.location.origin}/public/post/{ref.id}
+          </code>
+          <button
+            className="meta-btn"
+            onClick={() => {
+              navigator.clipboard.writeText(`${window.location.origin}/public/post/${ref.id}`);
+            }}
+            style={{ color: 'var(--accent)', fontWeight: 500 }}
+          >
+            Copy link
+          </button>
+        </div>
+      )}
+
+      <div className="post-detail__content">
+        {parseContent(ref.content).map((para, i) => (
+          <p key={i} style={{ marginBottom: 'var(--space-4)' }}>{para}</p>
+        ))}
+      </div>
 
       {/* Reactions */}
       <div className="post-detail__reactions">

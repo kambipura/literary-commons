@@ -5,12 +5,11 @@ import { api } from '../lib/api';
 import './Sidebar.css';
 
 const STUDENT_NAV = [
-  { to: '/',           label: 'The Commons',   icon: '◉' },
-  { to: '/write',      label: 'Write',         icon: '✎' },
-  { to: '/feed',       label: 'Conversations', icon: '◫' },
-  { to: '/notebook',   label: 'Notebook',      icon: '▤' },
-  { to: '/thread',     label: 'My Thread',     icon: '⟿' },
-  { to: '/essay',      label: 'Essay',         icon: '▬' },
+  { to: '/',         label: 'The Commons', icon: '◉' },
+  { to: '/write',    label: 'Write',       icon: '✎' },
+  { to: '/notebook', label: 'Notebook',    icon: '▤' },
+  { to: '/thread',   label: 'My Thread',   icon: '⟿' },
+  { to: '/essay',    label: 'Essay',       icon: '▬' },
 ];
 
 const PROFESSOR_NAV = [
