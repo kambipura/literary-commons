@@ -84,7 +84,6 @@ export default function SemesterThread() {
     );
   }
 
-  const getSession = (sessionId) => sessions.find(s => s.id === sessionId);
 
   return (
     <div className="thread">
@@ -104,7 +103,6 @@ export default function SemesterThread() {
           </div>
         ) : (
           timeline.map((entry, i) => {
-            const session = getSession(entry.sessionId);
             return (
               <div
                 key={entry.id}
@@ -113,11 +111,6 @@ export default function SemesterThread() {
               >
                 <div className="thread__entry-dot" />
                 <div className="thread__entry-date">{formatDate(entry.dateKey)}</div>
-                {session && (
-                  <div className="thread__entry-session">
-                    Session {session.number}: {session.title}
-                  </div>
-                )}
                 {entry.source && (
                   <div className="thread__entry-source">{entry.source}</div>
                 )}

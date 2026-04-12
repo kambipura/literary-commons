@@ -560,7 +560,122 @@
   gap: var(--space-3);
 }
 
-/* ── Class Feed ──────────────────────────────────────── */
+/* ── Feed Tabs ──────────────────────────────────────────── */
+
+.feed__tabs {
+  display: flex;
+  gap: var(--space-1);
+  border-bottom: var(--border-light);
+  margin-bottom: var(--space-6);
+}
+
+.feed__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink-3);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color var(--duration-fast), border-color var(--duration-fast);
+}
+
+.feed__tab:hover { color: var(--ink-2); }
+
+.feed__tab--active {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+.feed__tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 var(--space-1);
+  background: var(--accent);
+  color: white;
+  border-radius: var(--radius-full);
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+/* ── Peer Response Cards ─────────────────────────────── */
+
+.feed__response-group {
+  padding: var(--space-4) 0;
+  border-bottom: var(--border-light);
+}
+
+.feed__response-post-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  text-decoration: none;
+  color: inherit;
+  margin-bottom: var(--space-4);
+}
+
+.feed__response-post-title h4 {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: 500;
+  margin: 0;
+}
+
+.feed__response-post-title:hover h4 {
+  color: var(--accent);
+}
+
+.feed__response-comments {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-left: var(--space-4);
+  border-left: 2px solid var(--paper-3);
+}
+
+.feed__response-comment {
+  background: var(--paper-2);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+
+.feed__response-comment-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.feed__response-comment-body {
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  line-height: var(--leading-loose);
+  margin-bottom: var(--space-2);
+}
+
+.feed__response-reply-link {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--accent);
+  text-decoration: none;
+  letter-spacing: var(--tracking-wide);
+}
+
+.feed__response-reply-link:hover {
+  text-decoration: underline;
+}
+
+/* ── Class Feed (original) ──────────────────────────────── */
 
 .feed {
   max-width: var(--content-max-width);
@@ -572,6 +687,7 @@
   justify-content: space-between;
   margin-bottom: var(--space-6);
 }
+
 
 .feed__session-filter {
   display: flex;
@@ -1965,10 +2081,10 @@
   width: 100%;
   max-width: 680px;
   margin: 0 auto;
-  padding: var(--space-12) var(--space-6) 120px; /* bottom pad for FAB */
+  padding: var(--space-6) var(--space-6) 120px;
 }
 
-/* Title: big, clean, paper-like */
+/* Title: clean, sized for composition not display */
 .write-zen__title {
   display: block;
   width: 100%;
@@ -1976,11 +2092,11 @@
   background: transparent;
   outline: none;
   font-family: var(--font-heading);
-  font-size: clamp(1.75rem, 4vw, 2.5rem);
-  font-weight: 700;
+  font-size: clamp(1.25rem, 2.5vw, 1.625rem);
+  font-weight: 600;
   color: var(--ink);
   line-height: var(--leading-tight);
-  margin-bottom: var(--space-10);
+  margin-bottom: var(--space-4);
   padding: 0;
   caret-color: var(--accent);
 }

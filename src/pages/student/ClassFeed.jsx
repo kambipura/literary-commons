@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import Card, { CardBody, CardFooter } from '../../components/Card';
+import Card, { CardBody } from '../../components/Card';
 import Badge from '../../components/Badge';
 import Avatar from '../../components/Avatar';
 import Button from '../../components/Button';
@@ -29,9 +29,11 @@ const parseContent = (content) => {
 
 export default function ClassFeed() {
   const { user } = useContext(AuthContext);
+  const [activeTab, setActiveTab] = useState('commons'); // 'commons' | 'responses'
   const [activeSession, setActiveSession] = useState(null);
   const [reflectionsData, setReflectionsData] = useState([]);
   const [myReflections, setMyReflections] = useState([]);
+  const [myResponseComments, setMyResponseComments] = useState([]); // comments on MY posts
   const [roster, setRoster] = useState([]);
   const [chainsData, setChainsData] = useState([]);
   const [allComments, setAllComments] = useState([]);
@@ -48,14 +50,12 @@ export default function ClassFeed() {
         // 1. Get Course Context
         let courseId = null;
         const enrollments = await api.getMyEnrollments(user.id);
-        
+
         if (enrollments.length > 0) {
           courseId = enrollments[0].id;
         } else {
-          // Fallback discovery for Admins/Professors testing student view
           const courses = await api.getCourses();
           if (courses.length > 0) {
-            // Priority: First active course
             const activeCourse = courses.find(c => c.status === 'active');
             courseId = activeCourse ? activeCourse.id : courses[0].id;
           }
@@ -82,12 +82,21 @@ export default function ClassFeed() {
         const current = sessions.find(sess => sess.isActive);
         setActiveSession(current);
 
-        // Find most recent draft across all sessions for the nudge
+        // Find most recent draft for nudge
         const drafts = myRefs.filter(r => r.status === 'draft')
           .sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
         setRecentDraft(drafts[0]);
 
         await fetchFeed();
+
+        // 3. Fetch comments on MY published posts (for Peer Responses tab)
+        const myPublished = myRefs.filter(r => r.status === 'published');
+        if (myPublished.length > 0) {
+          const commentArrays = await Promise.all(myPublished.map(r => api.getComments(r.id)));
+          const allMyComments = commentArrays.flat();
+          setMyResponseComments(allMyComments);
+        }
+
       } catch (err) {
         console.error('Hub initialization failed:', err);
       } finally {
@@ -193,10 +202,20 @@ export default function ClassFeed() {
     );
   };
 
+  // Build grouped peer responses (comments on MY posts, grouped by reflection)
+  const myPublishedRefs = myReflections.filter(r => r.status === 'published');
+  const peerResponseGroups = myPublishedRefs
+    .map(ref => ({
+      ref,
+      comments: myResponseComments.filter(c => c.reflectionId === ref.id),
+    }))
+    .filter(g => g.comments.length > 0);
+
   return (
     <div className="hub-layout">
       <div className="hub-main">
-        {/* 1. Global Draft Nudge */}
+
+        {/* Draft Nudge */}
         {recentDraft && (
           <div className="hub-draft-nudge page-enter">
             <div className="hub-draft-nudge__content">
@@ -219,50 +238,105 @@ export default function ClassFeed() {
           </div>
         )}
 
-        {/* 2. Conversations Feed */}
-        <div className="feed">
-          <div className="feed__header">
-            <h3 className="section-title">The Conversation</h3>
-          </div>
-
-          {reflectionsData.length === 0 ? (
-            <EmptyState type="feed" />
-          ) : (
-            <div className="feed__stream">
-              {/* Chains first */}
-              {chains.map(chain => (
-                <div key={chain.id} className="feed__chain">
-                  <div className="feed__chain-label">
-                    <span>Response chain</span>
-                    <span className="feed__chain-line" />
-                    <span>{chain.title}</span>
-                  </div>
-                  <div className="feed__chain-posts">
-                    {chain.posts.map((ref, i) => (
-                      <div key={ref.id} className={`feed__post ${i === 0 ? 'feed__post--first' : ''}`}>
-                        <div className="feed__post-dot" />
-                        {renderPost(ref)}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-
-              {/* Standalone posts */}
-              {standalone.map(ref => (
-                <div key={ref.id} className="feed__standalone">
-                  {renderPost(ref)}
-                </div>
-              ))}
-            </div>
-          )}
+        {/* Tab switcher */}
+        <div className="feed__tabs">
+          <button
+            className={`feed__tab ${activeTab === 'commons' ? 'feed__tab--active' : ''}`}
+            onClick={() => setActiveTab('commons')}
+          >
+            The Conversation
+          </button>
+          <button
+            className={`feed__tab ${activeTab === 'responses' ? 'feed__tab--active' : ''}`}
+            onClick={() => setActiveTab('responses')}
+          >
+            Peer Responses
+            {myResponseComments.length > 0 && (
+              <span className="feed__tab-badge">{myResponseComments.length}</span>
+            )}
+          </button>
         </div>
+
+        {/* ── Tab: The Commons ── */}
+        {activeTab === 'commons' && (
+          <div className="feed">
+            {reflectionsData.length === 0 ? (
+              <EmptyState type="feed" />
+            ) : (
+              <div className="feed__stream">
+                {chains.map(chain => (
+                  <div key={chain.id} className="feed__chain">
+                    <div className="feed__chain-label">
+                      <span>Response chain</span>
+                      <span className="feed__chain-line" />
+                      <span>{chain.title}</span>
+                    </div>
+                    <div className="feed__chain-posts">
+                      {chain.posts.map((ref, i) => (
+                        <div key={ref.id} className={`feed__post ${i === 0 ? 'feed__post--first' : ''}`}>
+                          <div className="feed__post-dot" />
+                          {renderPost(ref)}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                {standalone.map(ref => (
+                  <div key={ref.id} className="feed__standalone">
+                    {renderPost(ref)}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Tab: Peer Responses ── */}
+        {activeTab === 'responses' && (
+          <div className="feed">
+            {peerResponseGroups.length === 0 ? (
+              <div style={{ padding: 'var(--space-12)', textAlign: 'center', color: 'var(--ink-3)' }}>
+                <p style={{ marginBottom: 'var(--space-2)' }}>No responses yet.</p>
+                <p style={{ fontSize: 'var(--text-sm)' }}>When classmates comment on your posts, they'll appear here.</p>
+              </div>
+            ) : (
+              <div className="feed__stream">
+                {peerResponseGroups.map(({ ref, comments }) => (
+                  <div key={ref.id} className="feed__response-group">
+                    <Link to={`/post/${ref.id}`} className="feed__response-post-title">
+                      <h4>{ref.title || 'Untitled reflection'}</h4>
+                      <span className="meta">{comments.length} response{comments.length > 1 ? 's' : ''}</span>
+                    </Link>
+                    <div className="feed__response-comments">
+                      {comments.map(cmt => (
+                        <div key={cmt.id} className="feed__response-comment">
+                          <div className="feed__response-comment-header">
+                            <Avatar name={cmt.authorName || 'Student'} size="sm" />
+                            <span style={{ fontWeight: 500, fontSize: 'var(--text-sm)' }}>
+                              {cmt.authorName || 'Student'}
+                            </span>
+                            <Badge type="comment" variant={cmt.type} size="sm" />
+                            <span className="meta">{formatRelative(cmt.createdAt)}</span>
+                          </div>
+                          <p className="feed__response-comment-body">{cmt.content}</p>
+                          <Link to={`/post/${ref.id}`} className="feed__response-reply-link">
+                            Reply on post →
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* 4. Roster Sidebar */}
+      {/* Roster Sidebar */}
       <aside className="hub-sidebar">
-        <ClassRoster 
-          students={roster} 
+        <ClassRoster
+          students={roster}
           currentUserId={user?.id}
           loading={loading}
         />
