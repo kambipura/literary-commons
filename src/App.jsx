@@ -10,7 +10,6 @@ import AuthLayout from './layouts/AuthLayout';
 
 // Pages — Student / Shared
 import {
-  StudentDashboard,
   Notebook,
   NoteEditor,
   ClassFeed,
@@ -46,6 +45,7 @@ import { Login } from './pages/auth';
 
 // Public
 import PublicEssay from './pages/public/PublicEssay';
+import PublicReflection from './pages/public/PublicReflection';
 
 function AppRoutes() {
   const { user, role, isAuthenticated, isLoading, isRecovering } = useContext(AuthContext);
@@ -60,13 +60,14 @@ function AppRoutes() {
   }
 
   // Helper to determine the dashboard based on role
-  const DashboardElement = role === 'admin' ? <AllCourses /> 
-    : (role === 'professor' ? <CourseOverview /> : <StudentDashboard />);
+  const DashboardElement = role === 'admin' ? <AllCourses />
+    : (role === 'professor' ? <CourseOverview /> : <ClassFeed />);
 
   return (
     <Routes>
-      {/* Public Routes */}
+      {/* Public Routes — no auth required */}
       <Route path="/public/essay/:id" element={<PublicEssay />} />
+      <Route path="/public/post/:id" element={<PublicReflection />} />
 
       {/* Auth Routes */}
       {(!isAuthenticated || isRecovering) ? (
@@ -76,7 +77,7 @@ function AppRoutes() {
         </Route>
       ) : (
         <>
-          {/* Shared Writing/Student Routes */}
+          {/* Student / Shared Routes */}
           <Route element={<StudentLayout />}>
             <Route index element={role === 'student' ? <ClassFeed /> : DashboardElement} />
             <Route path="notebook" element={<Notebook />} />
@@ -85,7 +86,6 @@ function AppRoutes() {
             <Route path="write" element={<WriteReflection />} />
             <Route path="post/:id" element={role === 'professor' ? <PostDetailProf /> : <PostDetail />} />
             <Route path="thread/:userId?" element={<SemesterThread />} />
-            <Route path="connections" element={<ConnectionsView />} />
             <Route path="essay" element={<EssayBuilder />} />
             <Route path="links" element={<PeerLinks />} />
           </Route>
@@ -103,7 +103,6 @@ function AppRoutes() {
           {(role === 'professor' || role === 'admin') && (
             <Route element={<ProfessorLayout />}>
               <Route path="overview" element={<CourseOverview />} />
-              <Route path="sessions" element={<SessionManager />} />
               <Route path="roster/:courseId" element={<StudentRoster />} />
               <Route path="enroll" element={<EnrollStudents />} />
               <Route path="grading" element={<GradingPanel />} />

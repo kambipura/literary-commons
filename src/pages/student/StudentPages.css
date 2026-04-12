@@ -291,6 +291,156 @@
 
 .note-editor__back:hover {
   color: var(--ink);
+}/* ── Redesigned Writing Space (Zen Mode) ────────────────── */
+
+.write {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: padding var(--duration-normal) var(--ease-out);
+}
+
+.write__zen-header {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-8);
+  border-bottom: 1px solid transparent;
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+}
+
+.write__layout {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden; /* Prevent sidebar from causing horizontal scroll */
+}
+
+.write__main {
+  flex: 1;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-4) var(--space-20);
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+
+/* Push Effect when sidebar is active */
+.write--with-context .write__main {
+  transform: translateX(-140px); /* Half of sidebar width approx */
+}
+
+.write__title-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-family: var(--font-heading);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: var(--space-12);
+  padding: 0;
+  outline: none;
+}
+
+.write__title-input::placeholder {
+  color: var(--paper-3);
+  font-style: italic;
+}
+
+/* Floating Action Bar */
+.write__fab {
+  position: fixed;
+  bottom: var(--space-8);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-header);
+  animation: slide-up 0.5s var(--ease-out) both;
+}
+
+.write__fab-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: var(--space-2) var(--space-6);
+  border-radius: var(--radius-full);
+  border: var(--border-light);
+  box-shadow: var(--shadow-xl);
+}
+
+.write__fab-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--paper-3);
+}
+
+.write__context-toggle {
+  background: transparent;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--ink-2);
+  cursor: pointer;
+  padding: 8px 0;
+  transition: color 0.2s;
+}
+
+.write__context-toggle:hover {
+  color: var(--gold);
+}
+
+.write__context-toggle.active {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+/* Sidebar Panel */
+.write__context-panel {
+  position: absolute;
+  right: -320px;
+  top: 0;
+  bottom: 0;
+  width: 300px;
+  background: var(--paper);
+  border-left: var(--border-light);
+  transition: transform var(--duration-normal) var(--ease-out);
+  z-index: var(--z-dropdown);
+  overflow-y: auto;
+}
+
+.write__context-panel.active {
+  transform: translateX(-320px);
+}
+
+.write__context-content {
+  padding: var(--space-8) var(--space-6);
+}
+
+/* Privacy Select Clean-up */
+.write__privacy-select {
+  border: none;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  cursor: pointer;
+  outline: none;
+}
+
+.write__privacy-select:hover {
+  color: var(--ink-2);
 }
 
 .note-editor__header {
@@ -848,145 +998,6 @@
   color: var(--ink);
 }
 
-/* ── Write Reflection ─────────────────────────────────── */
-
-.write {
-  max-width: var(--content-max-width);
-}
-
-.write__step {
-  margin-bottom: var(--space-8);
-}
-
-.write__step-label {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--ink-3);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-wide);
-  margin-bottom: var(--space-3);
-}
-
-.write__positioning-options {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.write__position-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border: var(--border);
-  border-radius: var(--radius-md);
-  background: var(--paper);
-  cursor: pointer;
-  text-align: left;
-  transition: all var(--duration-fast) var(--ease-out);
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  color: var(--ink-2);
-}
-
-.write__position-btn:hover {
-  border-color: var(--ink-3);
-  background: var(--paper-2);
-}
-
-.write__position-btn--selected {
-  border-color: var(--accent);
-  background: var(--accent-light);
-  color: var(--accent);
-}
-
-.write__position-icon {
-  font-size: var(--text-lg);
-  flex-shrink: 0;
-}
-
-.write__source-display {
-  padding: var(--space-3) var(--space-4);
-  background: var(--paper-2);
-  border-left: 3px solid var(--move-they-say);
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
-  margin-top: var(--space-3);
-  font-style: italic;
-  font-size: var(--text-sm);
-  color: var(--ink-2);
-}
-
-.write__surface {
-  display: flex;
-  gap: var(--space-4);
-}
-
-.write__editor {
-  flex: 1;
-}
-
-.write__title-input {
-  width: 100%;
-  border: none;
-  outline: none;
-  background: transparent;
-  font-family: var(--font-heading);
-  font-size: var(--text-2xl);
-  font-weight: 600;
-  color: var(--ink);
-  padding: var(--space-2) 0;
-  margin-bottom: var(--space-4);
-}
-
-.write__title-input::placeholder {
-  color: var(--ink-3);
-}
-
-.write__textarea {
-  width: 100%;
-  min-height: 300px;
-  border: none;
-  outline: none;
-  background: transparent;
-  font-family: var(--font-body);
-  font-size: var(--text-md);
-  color: var(--ink);
-  line-height: var(--leading-loose);
-  resize: vertical;
-}
-
-.write__textarea::placeholder {
-  color: var(--ink-3);
-  font-style: italic;
-}
-
-.write__footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding-top: var(--space-4);
-  border-top: var(--border-light);
-  margin-top: var(--space-6);
-  flex-wrap: wrap;
-}
-
-.write__footer-left {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.write__privacy-select {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--ink-2);
-  padding: var(--space-1) var(--space-2);
-  border: var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--paper);
-  cursor: pointer;
-}
 
 /* ── Semester Thread ──────────────────────────────────── */
 
@@ -1878,3 +1889,133 @@
   align-items: center;
   gap: var(--space-1);
 }
+
+/* ── Zen Writing Canvas ────────────────────────────────── */
+
+.write-zen {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+}
+
+.write-zen--loading {
+  justify-content: center;
+  align-items: center;
+  color: var(--ink-3);
+  font-style: italic;
+}
+
+/* Minimal header — fades in, stays out of the way */
+.write-zen__header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-6);
+  opacity: 0.4;
+  transition: opacity var(--duration-normal) var(--ease-out);
+  background: transparent;
+}
+
+.write-zen__header:hover,
+.write-zen:has(.write-zen__title:focus) .write-zen__header {
+  opacity: 1;
+}
+
+.write-zen__back {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  padding: 0;
+  transition: color var(--duration-fast);
+}
+
+.write-zen__back:hover {
+  color: var(--ink);
+}
+
+.write-zen__header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.write-zen__session-nudge {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--accent);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+/* The writing canvas itself — lots of breathing room */
+.write-zen__canvas {
+  flex: 1;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-6) 120px; /* bottom pad for FAB */
+}
+
+/* Title: big, clean, paper-like */
+.write-zen__title {
+  display: block;
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: var(--font-heading);
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 700;
+  color: var(--ink);
+  line-height: var(--leading-tight);
+  margin-bottom: var(--space-10);
+  padding: 0;
+  caret-color: var(--accent);
+}
+
+.write-zen__title::placeholder {
+  color: var(--paper-3);
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* Floating Action Bar  */
+.write-zen__fab {
+  position: fixed;
+  bottom: var(--space-8);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-header);
+  animation: slide-up 0.4s var(--ease-out) both;
+}
+
+.write-zen__fab-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-full);
+  border: var(--border-light);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0);    }
+}
+

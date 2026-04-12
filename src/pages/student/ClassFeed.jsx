@@ -9,10 +9,7 @@ import SessionSpotlight from '../../components/SessionSpotlight';
 import ClassRoster from '../../components/ClassRoster';
 import { api } from '../../lib/api';
 import { AuthContext } from '../../context/AuthContext';
-import {
-  getUser, getTheySayLabel,
-  formatRelative,
-} from '../../data/mock';
+import { getTheySayLabel, formatRelative } from '../../lib/utils';
 import './StudentPages.css';
 
 const REACTION_LABELS = {
@@ -23,8 +20,6 @@ const REACTION_LABELS = {
 
 export default function ClassFeed() {
   const { user } = useContext(AuthContext);
-  const [sessionFilter, setSessionFilter] = useState('all');
-  const [sessions, setSessions] = useState([]);
   const [activeSession, setActiveSession] = useState(null);
   const [reflectionsData, setReflectionsData] = useState([]);
   const [myReflections, setMyReflections] = useState([]);
@@ -42,27 +37,40 @@ export default function ClassFeed() {
 
       try {
         // 1. Get Course Context
-        let courseId = 'course-001'; // Fallback
+        let courseId = null;
         const enrollments = await api.getMyEnrollments(user.id);
+        
         if (enrollments.length > 0) {
           courseId = enrollments[0].id;
+        } else {
+          // Fallback discovery for Admins/Professors testing student view
+          const courses = await api.getCourses();
+          if (courses.length > 0) {
+            // Priority: First active course
+            const activeCourse = courses.find(c => c.status === 'active');
+            courseId = activeCourse ? activeCourse.id : courses[0].id;
+          }
+        }
+
+        if (!courseId) {
+          setLoading(false);
+          return;
         }
 
         // 2. Parallel Fetch Core Data
-        const [s, c, myRefs, students] = await Promise.all([
+        const [sessions, c, myRefs, students] = await Promise.all([
           api.getSessions(courseId),
           api.getResponseChains(),
           api.getReflections({ userId: user.id }),
           api.getEnrolledStudentsWithStats(courseId)
         ]);
 
-        setSessions(s);
         setChainsData(c);
         setMyReflections(myRefs);
         setRoster(students);
 
-        // Find active session
-        const current = s.find(sess => sess.isActive);
+        // Find active session — used only for the optional spotlight
+        const current = sessions.find(sess => sess.isActive);
         setActiveSession(current);
 
         // Find most recent draft across all sessions for the nudge
@@ -80,14 +88,11 @@ export default function ClassFeed() {
     init();
   }, [user?.id]);
 
-  const fetchFeed = async (sessionId) => {
-    // If filtering by session, we might want to update the spotlight's context?
-    // For now, the spotlight stays as the CURRENT active session.
-    
-    // Fetch published reflections for the feed
-    const refs = await api.getReflections({ sessionId, status: 'published' });
+  const fetchFeed = async () => {
+    // Fetch all published reflections — no session filter
+    const refs = await api.getReflections({ status: 'published' });
     setReflectionsData(refs);
-    
+
     const refIds = refs.map(r => r.id);
     if (refIds.length > 0) {
       const [cmts, rxs] = await Promise.all([
@@ -97,11 +102,6 @@ export default function ClassFeed() {
       setAllComments(cmts.flat());
       setAllReactions(rxs.flat());
     }
-  };
-
-  const handleFilterChange = (sid) => {
-    setSessionFilter(sid);
-    fetchFeed(sid);
   };
 
   // Safe delete handler for the draft nudge
@@ -223,24 +223,6 @@ export default function ClassFeed() {
         <div className="feed">
           <div className="feed__header">
             <h3 className="section-title">The Conversation</h3>
-          </div>
-
-          <div className="feed__session-filter">
-            <button
-              className={`notebook__filter-btn ${sessionFilter === 'all' ? 'notebook__filter-btn--active' : ''}`}
-              onClick={() => handleFilterChange('all')}
-            >
-              All Threads
-            </button>
-            {sessions.map(s => (
-              <button
-                key={s.id}
-                className={`notebook__filter-btn ${sessionFilter === s.id ? 'notebook__filter-btn--active' : ''}`}
-                onClick={() => handleFilterChange(s.id)}
-              >
-                {s.number}. {s.title}
-              </button>
-            ))}
           </div>
 
           {reflectionsData.length === 0 ? (

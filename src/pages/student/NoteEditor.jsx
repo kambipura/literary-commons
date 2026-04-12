@@ -137,7 +137,18 @@ export default function NoteEditor() {
             {blocks.reduce((acc, b) => acc + b.text.split(' ').filter(w => w).length, 0)} words
           </span>
         </div>
-        <Button variant="secondary" size="sm">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => navigate('/write', {
+            state: {
+              seed: {
+                title,
+                content: blocks.map(b => b.text).filter(Boolean).join('\n\n')
+              }
+            }
+          })}
+        >
           Promote to class draft →
         </Button>
       </div>

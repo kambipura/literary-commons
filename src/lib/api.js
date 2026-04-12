@@ -988,6 +988,32 @@ export const api = {
     }
   },
 
+  async getEssayById(id) {
+    try {
+      const { data, error } = await supabase
+        .from('essays')
+        .select('*, profiles(name)')
+        .eq('id', id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      if (!data) return null;
+
+      return {
+        id: data.id,
+        userId: data.user_id,
+        title: data.title,
+        sections: data.sections || [],
+        status: data.status,
+        updatedAt: data.updated_at,
+        authorName: data.profiles?.name || 'Author'
+      };
+    } catch (err) {
+      console.warn(`api.getEssayById(${id}) failed:`, err.message);
+      return null;
+    }
+  },
+
   async getUserStats(userId) {
     try {
       const [courses, reflections, comments, reactions] = await Promise.all([

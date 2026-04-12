@@ -11,7 +11,7 @@
 .fluid-block {
   position: relative;
   display: flex;
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-8); /* Increased for breathability */
   transition: all var(--duration-fast);
 }
 
@@ -53,7 +53,7 @@
   position: relative;
 }
 
-/* Margin Indicator */
+/* Margin Indicator (Ghosted) */
 .fluid-block__indicator {
   position: absolute;
   left: -20px;
@@ -61,7 +61,13 @@
   bottom: 4px;
   width: 4px;
   border-radius: 4px;
-  transition: background-color var(--duration-fast);
+  transition: all var(--duration-fast);
+  opacity: 0; /* Hidden by default */
+}
+
+.fluid-block:hover .fluid-block__indicator,
+.fluid-block:focus-within .fluid-block__indicator {
+  opacity: 1;
 }
 
 .fluid-block__indicator--they-say { background-color: var(--move-they-say); }

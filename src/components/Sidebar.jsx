@@ -5,23 +5,21 @@ import { api } from '../lib/api';
 import './Sidebar.css';
 
 const STUDENT_NAV = [
-  { to: '/',           label: 'Class Hub',   icon: '◉' },
-  { to: '/notebook',   label: 'Notebook',    icon: '▤' },
-  { to: '/feed',       label: 'Class Feed',  icon: '◫' },
-  { to: '/write',      label: 'Write',       icon: '✎' },
-  { to: '/thread',     label: 'My Thread',   icon: '⟿' },
-  { to: '/connections',label: 'Connections', icon: '⬡' },
-  { to: '/essay',      label: 'Essay',       icon: '▬' },
+  { to: '/',           label: 'The Commons',   icon: '◉' },
+  { to: '/write',      label: 'Write',         icon: '✎' },
+  { to: '/feed',       label: 'Conversations', icon: '◫' },
+  { to: '/notebook',   label: 'Notebook',      icon: '▤' },
+  { to: '/thread',     label: 'My Thread',     icon: '⟿' },
+  { to: '/essay',      label: 'Essay',         icon: '▬' },
 ];
 
 const PROFESSOR_NAV = [
   { to: '/',           label: 'Overview',     icon: '◉' },
   { to: '/notebook',   label: 'Notebook',     icon: '▤' },
-  { to: '/sessions',   label: 'Sessions',     icon: '▤' },
-  { to: '/feed',       label: 'Class Feed',   icon: '◫' },
-  { to: '/enroll',     label: 'Enroll',       icon: '⊞' },
-  { to: '/roster',     label: 'Roster',       icon: '⊞' },
-  { to: '/grading',    label: 'Grading',      icon: '✎' },
+  { to: '/feed',       label: 'Conversations', icon: '◫' },
+  { to: '/enroll',     label: 'Enroll Students', icon: '⊞' },
+  { to: '/roster',     label: 'Class Roster',   icon: '⊞' },
+  { to: '/grading',    label: 'Feedback & Grading', icon: '✎' },
   { to: '/participation', label: 'Participation', icon: '⟿' },
 ];
 

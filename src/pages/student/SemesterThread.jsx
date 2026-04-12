@@ -3,10 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import Badge from '../../components/Badge';
 import { api } from '../../lib/api';
 import { AuthContext } from '../../context/AuthContext';
-import {
-  formatDate,
-  getTheySayLabel
-} from '../../data/mock';
+import { formatDate } from '../../lib/utils';
 import './StudentPages.css';
 
 export default function SemesterThread() {
@@ -15,10 +12,11 @@ export default function SemesterThread() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [timeline, setTimeline] = useState([]);
-  const [sessions, setSessions] = useState([]);
+
 
   const targetId = paramId || currentUser?.id;
   const isMe = targetId === currentUser?.id;
+  const [courseId, setCourseId] = useState(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -26,26 +24,35 @@ export default function SemesterThread() {
       setLoading(true);
 
       try {
-        // Parallel fetch for the user's journey
-        const [prof, refs, notes, allSessions] = await Promise.all([
+        // Discover course for session context
+        let resolvedCourseId = courseId;
+        if (!resolvedCourseId && currentUser) {
+          const enrollments = await api.getMyEnrollments(currentUser.id);
+          if (enrollments.length > 0) {
+            resolvedCourseId = enrollments[0].id;
+          } else {
+            const courses = await api.getCourses();
+            if (courses.length > 0) resolvedCourseId = courses[0].id;
+          }
+          if (resolvedCourseId) setCourseId(resolvedCourseId);
+        }
+
+        // Parallel fetch
+        const [prof, refs, notes] = await Promise.all([
           api.getProfile(targetId),
           api.getReflections({ userId: targetId }),
-          isMe ? api.getNotes(targetId) : Promise.resolve([]), // Only see own notes
-          api.getSessions('course-001') // Ideal: get courseId from context
+          isMe ? api.getNotes(targetId) : Promise.resolve([]),
         ]);
 
         setProfile(prof);
-        setSessions(allSessions);
 
-        // Combine and map for timeline
-        // Filter: If not me, only show published reflections
+        // Filter: if not viewing own thread, only show published reflections
         const reflections = refs
           .filter(r => isMe || r.status === 'published')
           .map(r => ({
             ...r,
             entryType: 'reflection',
             dateKey: r.createdAt || r.created_at,
-            source: getTheySayLabel(r.theySaySource || r.they_say_source),
           }));
 
         const myNotes = notes
@@ -54,12 +61,11 @@ export default function SemesterThread() {
             ...n,
             entryType: 'note',
             dateKey: n.createdAt || n.created_at,
-            source: '',
           }));
 
         const combined = [...reflections, ...myNotes]
           .sort((a, b) => new Date(a.dateKey) - new Date(b.dateKey));
-        
+
         setTimeline(combined);
       } catch (err) {
         console.error('Thread fetch failed:', err);
@@ -68,7 +74,7 @@ export default function SemesterThread() {
       }
     }
     fetchData();
-  }, [targetId, isMe]);
+  }, [targetId, isMe, currentUser?.id]);
 
   if (loading) {
     return (

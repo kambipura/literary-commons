@@ -40,7 +40,7 @@ export function formatRelative(dateStr) {
   const d = new Date(dateStr);
   const diffMs = now - d;
   const diffMin = Math.floor(diffMs / 60000);
-  const diffHr = Math.floor(diffMs / 36000000);
+  const diffHr = Math.floor(diffMs / 3600000);
   const diffDay = Math.floor(diffMs / 86400000);
 
   if (diffMin < 1) return 'just now';
