@@ -6,17 +6,9 @@ import Button from '../../components/Button';
 import { api } from '../../lib/api';
 import { AuthContext } from '../../context/AuthContext';
 import { formatDate, formatTime } from '../../lib/utils';
+import { renderMarkdown } from '../../components/FluidEditor';
 import './StudentPages.css';
 
-// Parse block-JSON content into readable paragraphs
-const parseContent = (content) => {
-  if (!content) return [];
-  try {
-    const blocks = JSON.parse(content);
-    if (Array.isArray(blocks)) return blocks.map(b => b.text).filter(Boolean);
-  } catch {}
-  return [content];
-};
 
 const REACTION_TYPES = [
   { key: 'shifts', label: 'This shifts something for me' },
@@ -186,9 +178,20 @@ export default function PostDetail() {
       )}
 
       <div className="post-detail__content">
-        {parseContent(ref.content).map((para, i) => (
-          <p key={i} style={{ marginBottom: 'var(--space-4)' }}>{para}</p>
-        ))}
+        {(() => {
+          let paras = [];
+          try {
+            const blocks = JSON.parse(ref.content || '[]');
+            if (Array.isArray(blocks)) paras = blocks.map(b => b.text).filter(Boolean);
+          } catch {
+            paras = (ref.content || '').split('\n\n').filter(Boolean);
+          }
+          return paras.map((para, i) => (
+            <p key={i} style={{ marginBottom: 'var(--space-4)' }}>
+              {renderMarkdown(para)}
+            </p>
+          ));
+        })()}
       </div>
 
       {/* Reactions */}

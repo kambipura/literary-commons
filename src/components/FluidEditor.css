@@ -8,6 +8,58 @@
   padding: var(--space-4) 0;
 }
 
+/* ── Formatting toolbar ── */
+.fluid-format-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+  padding: var(--space-1) var(--space-2);
+  border: var(--border-light);
+  border-radius: var(--radius-md);
+  background: var(--paper-2);
+  flex-wrap: wrap;
+}
+
+.fluid-format-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 var(--space-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  transition: background-color var(--duration-fast), color var(--duration-fast);
+  line-height: 1;
+}
+
+.fluid-format-btn:hover {
+  background: var(--paper-3);
+  color: var(--ink);
+}
+
+.fluid-format-btn--bold   { font-weight: 700; }
+.fluid-format-btn--italic { font-style: italic; }
+
+.fluid-format-bar__hint {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: var(--tracking-wide);
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .fluid-format-bar__hint { display: none; }
+}
+
+
 .fluid-block {
   position: relative;
   display: flex;
