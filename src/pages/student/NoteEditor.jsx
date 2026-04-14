@@ -15,7 +15,7 @@ export default function NoteEditor() {
   const isNew = id === 'new';
 
   const [title, setTitle] = useState('');
-  const [url, setUrl] = useState('');
+
   const [tags, setTags] = useState([]);
   const [blocks, setBlocks] = useState([]);
   const [loading, setLoading] = useState(!isNew);
@@ -27,7 +27,7 @@ export default function NoteEditor() {
         const existingNote = await api.getNoteById(id);
         if (existingNote) {
           setTitle(existingNote.title || '');
-          setUrl(existingNote.url || '');
+
           setTags(existingNote.tags || []);
           
           // Parse existing note into blocks
@@ -64,7 +64,7 @@ export default function NoteEditor() {
         title,
         content: blocks.map(b => b.text).join('\n\n'),
         type: 'free',
-        metadata: { url, tags }
+        metadata: { tags }
       };
 
       try {
@@ -84,7 +84,7 @@ export default function NoteEditor() {
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [title, blocks, url, tags, loading, user?.id, id, navigate]);
+  }, [title, blocks, tags, loading, user?.id, id, navigate]);
 
   if (loading) {
     return (
@@ -113,14 +113,7 @@ export default function NoteEditor() {
         style={{ marginBottom: 'var(--space-2)' }}
       />
       
-      <input
-        type="url"
-        className="note-editor__url-input"
-        placeholder="Paste a URL reference here (optional)…"
-        value={url}
-        onChange={e => setUrl(e.target.value)}
-        style={{ width: '100%', border: 'none', borderBottom: '1px dashed var(--paper-3)', paddingBottom: 'var(--space-2)', marginBottom: 'var(--space-6)', backgroundColor: 'transparent' }}
-      />
+
 
       <div className="note-editor__body" style={{ minHeight: '40vh', borderLeft: 'var(--border-light)', paddingLeft: 'var(--space-4)' }}>
         <p className="meta" style={{ marginBottom: 'var(--space-4)', opacity: 0.6 }}>Hover in the left margin to tag rhetorical moves.</p>
