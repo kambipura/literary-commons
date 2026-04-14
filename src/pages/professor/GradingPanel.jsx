@@ -28,10 +28,7 @@ export default function GradingPanel() {
 
   const [editGrade, setEditGrade] = useState('');
   const [editOverall, setEditOverall] = useState('');
-  const [showStructured, setShowStructured] = useState(false);
-  const [editTheySay, setEditTheySay] = useState('');
-  const [editISay, setEditISay] = useState('');
-  const [editSoWhat, setEditSoWhat] = useState('');
+
 
   useEffect(() => {
     async function fetchData() {
@@ -71,10 +68,7 @@ export default function GradingPanel() {
     // Grade is currently implied in feedback text for this version
     setEditGrade(''); 
     setEditOverall(existing?.comment || '');
-    setEditTheySay('');
-    setEditISay('');
-    setEditSoWhat('');
-    setShowStructured(false);
+
   };
 
   const handleSave = async (refId) => {
@@ -84,7 +78,7 @@ export default function GradingPanel() {
       const newAnn = await api.createAnnotation({
         reflectionId: refId,
         professorId: currentUser?.id,
-        comment: `Grade: ${editGrade}. ${editOverall}${editTheySay ? '\nThey Say: ' + editTheySay : ''}${editISay ? '\nI Say: ' + editISay : ''}`
+        comment: `Grade: ${editGrade}. ${editOverall}`
       });
       
       setLocalAnnotations(prev => [...prev.filter(a => a.reflection_id !== refId), newAnn]);
@@ -216,47 +210,7 @@ export default function GradingPanel() {
                       />
                     </div>
 
-                    <button
-                      className="grading__structured-toggle"
-                      onClick={() => setShowStructured(!showStructured)}
-                    >
-                      {showStructured ? '▾ Hide' : '▸ Show'} structured feedback (optional)
-                    </button>
 
-                    {showStructured && (
-                      <div className="grading__structured-fields">
-                        <div>
-                          <div className="grading__structured-label">They Say</div>
-                          <textarea
-                            className="grading__feedback-textarea"
-                            style={{ minHeight: '50px' }}
-                            placeholder="How well they entered the conversation…"
-                            value={editTheySay}
-                            onChange={e => setEditTheySay(e.target.value)}
-                          />
-                        </div>
-                        <div>
-                          <div className="grading__structured-label">I Say</div>
-                          <textarea
-                            className="grading__feedback-textarea"
-                            style={{ minHeight: '50px' }}
-                            placeholder="Strength of their own position…"
-                            value={editISay}
-                            onChange={e => setEditISay(e.target.value)}
-                          />
-                        </div>
-                        <div>
-                          <div className="grading__structured-label">So What</div>
-                          <textarea
-                            className="grading__feedback-textarea"
-                            style={{ minHeight: '50px' }}
-                            placeholder="Did they extend the significance?…"
-                            value={editSoWhat}
-                            onChange={e => setEditSoWhat(e.target.value)}
-                          />
-                        </div>
-                      </div>
-                    )}
 
                     <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
                       <Button size="sm" variant="ghost" onClick={() => setExpandedId(null)}>Cancel</Button>

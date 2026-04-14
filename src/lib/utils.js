@@ -51,9 +51,9 @@ export function formatRelative(dateStr) {
 }
 
 /**
- * Generate a descriptive label for a reflection's "They Say" source.
+ * Generate a descriptive label for a reflection's response source.
  */
-export function getTheySayLabel(source, context = {}) {
+export function getResponseSourceLabel(source, context = {}) {
   if (!source) return '';
   
   if (source.type === 'prompt') {
@@ -77,7 +77,7 @@ export function getTheySayLabel(source, context = {}) {
 }
 
 export const PROMPT_TYPES = {
-  'they-say': { label: 'They Say/I Say', icon: '🗣️' },
+  'they-say': { label: 'Structured Response', icon: '🗣️' },
   'reading': { label: 'Reading Response', icon: '📖' },
   'open': { label: 'Open Reflection', icon: '💭' },
   'peer': { label: 'Peer Review', icon: '👥' }

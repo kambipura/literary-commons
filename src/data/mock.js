@@ -830,7 +830,7 @@ export function formatRelative(dateStr) {
   return formatDate(dateStr);
 }
 
-export function getTheySayLabel(source) {
+export function getResponseSourceLabel(source) {
   if (!source) return '';
   if (source.type === 'prompt') {
     const session = sessions.find(s => s.id === source.sessionId);

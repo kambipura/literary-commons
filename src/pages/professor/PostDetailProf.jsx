@@ -5,13 +5,13 @@ import Badge from '../../components/Badge';
 import Button from '../../components/Button';
 import { api } from '../../lib/api';
 import { AuthContext } from '../../context/AuthContext';
-import { formatDate, formatTime, getTheySayLabel } from '../../lib/utils';
+import { formatDate, formatTime, getResponseSourceLabel } from '../../lib/utils';
 import './ProfessorPages.css';
 
 const MOVE_OPTIONS = [
-  { key: 'they-say', label: 'They Say' },
-  { key: 'i-say', label: 'I Say' },
-  { key: 'so-what', label: 'So What' },
+  { key: 'evidence', label: 'Evidence' },
+  { key: 'naysayer', label: 'Naysayer' },
+  { key: 'context', label: 'Context' },
   { key: null, label: 'General' },
 ];
 
@@ -70,7 +70,7 @@ export default function PostDetailProf() {
   const createdAt = post.createdAt;
   const paragraphs = content.split('\n\n').filter(p => p.trim());
   const grade = null; // Grades logic can be refactored to annotations
-  const sourceLabel = reflection ? getTheySayLabel(reflection.theySaySource, { sessionTitle: reflection.sessionTitle }) : null;
+  const sourceLabel = reflection ? getResponseSourceLabel(reflection.theySaySource, { sessionTitle: reflection.sessionTitle }) : null;
 
   const handleSaveAnnotation = async () => {
     if (!annComment.trim() || !professor) return;

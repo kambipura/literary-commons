@@ -1,10 +1,6 @@
 import './Badge.css';
 
-const MOVE_VARIANTS = {
-  'they-say': { label: 'They Say', className: 'badge--they-say' },
-  'i-say':    { label: 'I Say',    className: 'badge--i-say' },
-  'so-what':  { label: 'So What',  className: 'badge--so-what' },
-};
+const MOVE_VARIANTS = {};
 
 const REACTION_VARIANTS = {
   'shifts':   { label: 'Shifts something',     className: 'badge--shifts' },

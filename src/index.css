@@ -77,15 +77,6 @@ ul, ol {
   --error:     #c84b2f;
   --warning:   #b8963e;
 
-  /* Move colours (They Say / I Say / So What) */
-  --move-they-say:  #6b7fb5;
-  --move-i-say:     #c84b2f;
-  --move-so-what:   #7a6e5d;
-
-  --move-they-say-bg:  rgba(107, 127, 181, 0.08);
-  --move-i-say-bg:     rgba(200, 75, 47, 0.08);
-  --move-so-what-bg:   rgba(122, 110, 93, 0.08);
-
   /* Reaction colours */
   --react-shifts:     #6b7fb5;
   --react-pushback:   #c84b2f;

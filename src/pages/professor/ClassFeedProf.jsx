@@ -4,7 +4,7 @@ import Avatar from '../../components/Avatar';
 import Badge from '../../components/Badge';
 import { api } from '../../lib/api';
 import {
-  getTheySayLabel, formatRelative,
+  getResponseSourceLabel, formatRelative,
 } from '../../lib/utils';
 import './ProfessorPages.css';
 
@@ -96,7 +96,7 @@ export default function ClassFeedProf() {
 
   const renderPost = (ref) => {
     const authorName = ref.authorName || 'Student';
-    const sourceLabel = getTheySayLabel(ref.theySaySource);
+    const sourceLabel = getResponseSourceLabel(ref.theySaySource);
     const commentCount = allComments.filter(c => c.reflectionId === ref.id).length;
     const reactionCount = allReactions.filter(r => r.reflectionId === ref.id).length;
     const grade = null; // No grades fetched yet

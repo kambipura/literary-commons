@@ -15,6 +15,7 @@ export default function EssayBuilder() {
   const [blocks, setBlocks] = useState([]);
   const [saveStatus, setSaveStatus] = useState('idle');
   const [viewMode, setViewMode] = useState('blocks'); // 'blocks' | 'reading'
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [showPeerModal, setShowPeerModal] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -97,10 +98,51 @@ export default function EssayBuilder() {
     );
   }
 
-  const theySayCount = blocks.filter(b => b.moveType === 'they-say').length;
-  const iSayCount = blocks.filter(b => b.moveType === 'i-say').length;
-  const soWhatCount = blocks.filter(b => b.moveType === 'so-what').length;
-  const total = Math.max(theySayCount + iSayCount + soWhatCount, 1);
+  const handleSubmitEssay = async () => {
+    if (!currentUser) return;
+    setIsSubmitting(true);
+    setSaveStatus('saving');
+    try {
+      const saved = await api.saveEssay({
+        id: essayId,
+        userId: currentUser.id,
+        title,
+        sections: blocks,
+        status: 'published'
+      });
+      if (saved && !essayId) setEssayId(saved.id);
+      setSaveStatus('saved');
+      alert('Essay published successfully!');
+    } catch (err) {
+      alert('Failed to submit: ' + err.message);
+      setSaveStatus('idle');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handlePublishToWeb = async () => {
+    if (!currentUser) return;
+    setIsSubmitting(true);
+    setSaveStatus('saving');
+    try {
+      const saved = await api.saveEssay({
+        id: essayId,
+        userId: currentUser.id,
+        title,
+        sections: blocks,
+        status: 'published'
+      });
+      if (saved && !essayId) setEssayId(saved.id);
+      setSaveStatus('saved');
+      window.open(`/public/essay/${saved.id}`, '_blank');
+    } catch (err) {
+      alert('Failed to publish: ' + err.message);
+      setSaveStatus('idle');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const insertSource = (content) => {
     const newBlock = {
@@ -151,33 +193,6 @@ export default function EssayBuilder() {
         <Button size="sm" variant="ghost" onClick={insertWorksCitedSkeleton}>+ Works Cited Format</Button>
       </div>
 
-      {/* Margins/Density Tracker */}
-      <div className="essay-builder__density" style={{ marginBottom: 'var(--space-6)' }}>
-        <div className="essay-builder__density-bar">
-          <span className="essay-builder__density-label">They Say</span>
-          <div
-            className="essay-builder__density-fill"
-            style={{ width: `${(theySayCount / total) * 100}%`, backgroundColor: 'var(--move-they-say)', minWidth: '4px' }}
-          />
-          <span className="essay-builder__density-label">{theySayCount}</span>
-        </div>
-        <div className="essay-builder__density-bar">
-          <span className="essay-builder__density-label">I Say</span>
-          <div
-            className="essay-builder__density-fill"
-            style={{ width: `${(iSayCount / total) * 100}%`, backgroundColor: 'var(--move-i-say)', minWidth: '4px' }}
-          />
-          <span className="essay-builder__density-label">{iSayCount}</span>
-        </div>
-        <div className="essay-builder__density-bar">
-          <span className="essay-builder__density-label">So What</span>
-          <div
-            className="essay-builder__density-fill"
-            style={{ width: `${(soWhatCount / total) * 100}%`, backgroundColor: 'var(--move-so-what)', minWidth: '4px' }}
-          />
-          <span className="essay-builder__density-label">{soWhatCount}</span>
-        </div>
-      </div>
 
       <div style={{ display: 'flex', gap: 'var(--space-6)', alignItems: 'flex-start' }}>
         {/* Editor constraints */}
@@ -226,8 +241,8 @@ export default function EssayBuilder() {
         <span className="meta">{blocks.length} paragraphs · Word count: {blocks.reduce((acc, b) => acc + b.text.split(' ').filter(w => w).length, 0)}</span>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
           <Button size="sm" variant="ghost" onClick={() => setShowPeerModal(true)}>Request Peer Review</Button>
-          <Button size="sm" variant="ghost" onClick={() => window.open(`/public/essay/${essayId || 'essay-001'}`, '_blank')}>Publish to Web</Button>
-          <Button size="sm" variant="primary">Submit Essay</Button>
+          <Button size="sm" variant="ghost" onClick={handlePublishToWeb} disabled={isSubmitting}>Publish to Web</Button>
+          <Button size="sm" variant="primary" onClick={handleSubmitEssay} disabled={isSubmitting}>{isSubmitting ? 'Submitting...' : 'Submit Essay'}</Button>
         </div>
       </div>
 

@@ -274,17 +274,7 @@ export default function FluidEditor({ blocks, onChange, placeholder = 'Start wri
             <div className="fluid-block__gutter-icon" title="Tag paragraph">⋮⋮</div>
             {activeToolbar === block.id && (
               <div className="fluid-toolbar" onClick={e => e.stopPropagation()}>
-                <div className="fluid-toolbar__title">Assign Move</div>
-                <button className="fluid-toolbar__btn" onClick={() => handleTagChange(index, 'they-say')}>
-                  <Badge type="move" variant="they-say" size="sm" /> They Say
-                </button>
-                <button className="fluid-toolbar__btn" onClick={() => handleTagChange(index, 'i-say')}>
-                  <Badge type="move" variant="i-say" size="sm" /> I Say
-                </button>
-                <button className="fluid-toolbar__btn" onClick={() => handleTagChange(index, 'so-what')}>
-                  <Badge type="move" variant="so-what" size="sm" /> So What
-                </button>
-                <div style={{ height: '1px', background: 'var(--paper-3)', margin: 'var(--space-2) 0' }} />
+                <div className="fluid-toolbar__title">Assign Label</div>
                 <button className="fluid-toolbar__btn" onClick={() => handleTagChange(index, 'evidence')}>
                   <Badge type="move" variant="evidence" size="sm" /> Evidence
                 </button>
