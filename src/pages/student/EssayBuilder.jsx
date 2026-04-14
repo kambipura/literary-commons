@@ -153,7 +153,10 @@ export default function EssayBuilder() {
     setBlocks(prev => [...prev, newBlock]);
   };
 
-
+  const insertWorksCitedSkeleton = () => {
+    const skeleton = "Works Cited\n\nLast Name, First Name. Title of Book. Publisher, Publication Date.\n\nAuthor. \"Title of Article.\" Title of Journal, Volume, Issue, Year, pages.";
+    setBlocks(prev => [...prev, { id: `blk-${Date.now()}-wc`, text: skeleton, moveType: null }]);
+  };
 
   return (
     <div className="essay-builder">
@@ -178,15 +181,16 @@ export default function EssayBuilder() {
         <AutosaveIndicator status={saveStatus} />
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-6)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
         <input
           type="text"
           className="essay-builder__title-input"
           placeholder="Title your essay…"
           value={title}
           onChange={e => setTitle(e.target.value)}
-          style={{ flex: 1, marginBottom: 0 }}
+          style={{ flex: 1 }}
         />
+        <Button size="sm" variant="ghost" onClick={insertWorksCitedSkeleton}>+ Works Cited Format</Button>
       </div>
 
 
