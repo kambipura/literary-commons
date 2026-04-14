@@ -1123,6 +1123,7 @@
 
 .thread__header {
   margin-bottom: var(--space-8);
+  padding-left: var(--space-8);
 }
 
 .thread__header h2 {
@@ -1138,7 +1139,6 @@
 
 .thread__timeline {
   position: relative;
-  margin-left: calc(-1 * var(--space-8));
   padding-left: var(--space-8);
 }
 
